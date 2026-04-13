@@ -1,38 +1,21 @@
-:root { --neon: #00ffff; }
+:root { 
+    --neon: #00ffff; 
+    --gd-blue: #2874fc; 
+    --gold: #ffcf40; 
+}
+
 body { 
     margin: 0; background: #000; overflow: hidden; 
-    font-family: 'Arial Black', sans-serif; 
-    touch-action: none; /* Prevents the browser from zooming/scrolling */
-    color: white; 
-    user-select: none; 
-    -webkit-user-select: none;
+    font-family: 'Arial Black', sans-serif; touch-action: none; 
+    color: white; user-select: none; -webkit-tap-highlight-color: transparent;
 }
 
 .overlay { 
     position: fixed; inset: 0; display: flex; flex-direction: column; 
-    align-items: center; justify-content: center; 
-    background: rgba(0,0,0,0.9); 
-    z-index: 10000; 
-    pointer-events: auto; /* Ensures buttons can be pressed */
+    align-items: center; justify-content: center; background: rgba(0,0,0,0.9); 
+    z-index: 10000; pointer-events: auto; 
 }
 
 .hidden { display: none !important; }
 
-/* This ensures the game area ignores menu-clicks but registers gameplay touches */
-#gameCanvas {
-    display: block;
-    width: 100vw;
-    height: 100vh;
-    touch-action: none;
-}
-
-.btn, .arrow { 
-    cursor: pointer; 
-    pointer-events: auto; 
-    z-index: 10001; 
-}
-
-#hud { 
-    position: fixed; top: 20px; left: 20px; z-index: 50; 
-    color: var(--neon); pointer-events: none; 
-}
+/* ... include all your other .btn, .hud, and .selector classes here ... */
