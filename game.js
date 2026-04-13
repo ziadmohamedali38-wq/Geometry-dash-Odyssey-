@@ -3,8 +3,9 @@ const ctx = canvas.getContext('2d');
 let state = 'MENU', att = 1, camX = 0, currentIdx = 0, paused = false;
 let playerColor = '#0ff', totalJumps = 0, wins = 0;
 
+// CHANGED: Welcoming Time is now 'cube' mode
 const levels = [
-    { name: 'WELCOMING TIME', mode: 'ship', len: 6000, color: '#0cc' },
+    { name: 'WELCOMING TIME', mode: 'cube', len: 6000, color: '#0cc' },
     { name: 'BACK ON TIME', mode: 'cube', len: 7000, color: '#c0c' },
     { name: 'POLAR DICE', mode: 'cube', len: 8000, color: '#0c0' },
     { name: 'DRY DESERT', mode: 'cube', len: 10000, color: '#c60' }
@@ -18,12 +19,10 @@ function init() {
     canvas.height = window.innerHeight; 
 }
 
-// Navigation Logic
 window.nav = (id) => {
     document.querySelectorAll('.overlay').forEach(m => m.classList.add('hidden'));
     if(id !== 'none') document.getElementById(id).classList.remove('hidden');
     
-    // Update Stats in the "More" menu when opened
     if(id === 'menu-more') {
         document.getElementById('stat-jumps').innerText = totalJumps;
         document.getElementById('stat-wins').innerText = wins;
@@ -53,10 +52,10 @@ window.togglePause = (val) => {
 
 function resetGame() {
     camX = 0; p.vy = 0; p.rot = 0; p.flipped = false;
+    // Mode check based on level data
     p.isShip = (levels[currentIdx].mode === 'ship');
     p.y = canvas.height * 0.75 - p.size;
     
-    // Level Generation Logic (Adds Spikes and Portals)
     world = [];
     const spacing = 900;
     for(let i=1; i<=15; i++) {
@@ -66,10 +65,16 @@ function resetGame() {
     }
 }
 
-// Fixed Input Handler for Median APK
+// --- BUTTON FIX LOGIC ---
 function handleGlobalInput(e, isDown) {
-    if (e.target.tagName === 'BUTTON' || e.target.closest('.btn') || e.target.closest('.arrow')) return;
-    
+    // Check if the user is actually clicking a UI element
+    const isUI = e.target.closest('.btn') || 
+                 e.target.closest('.arrow') || 
+                 e.target.id === 'pause-trigger' ||
+                 e.target.tagName === 'BUTTON';
+
+    if (isUI) return; // Ignore input for the game if clicking a button
+
     if (state === 'PLAY' && !paused) {
         if (isDown) {
             p.isHold = true;
@@ -110,7 +115,6 @@ function update(dt) {
     if (!p.flipped && p.y > floor - p.size) { p.y = floor - p.size; p.vy = 0; }
     if (p.flipped && p.y < 75) { p.y = 75; p.vy = 0; }
 
-    // Collision Logic
     world.forEach(obj => {
         let ox = obj.x - camX + p.x;
         let oy = obj.y || (p.flipped ? 75 : floor - 50);
