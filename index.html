@@ -8,38 +8,62 @@
         :root { --neon: #00ffff; --gd-blue: #2874fc; --gold: #ffcf40; }
         body { margin: 0; background: #000; overflow: hidden; font-family: 'Arial Black', sans-serif; touch-action: none; color: white; user-select: none; }
         
-        /* UI Overlays */
-        .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); z-index: 10000; pointer-events: auto; }
+        .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); z-index: 10000; }
         .hidden { display: none !important; }
         
-        .btn { padding: 18px 50px; background: var(--gd-blue); border: 4px solid white; color: white; font-size: 1.4rem; font-weight: 900; border-radius: 15px; cursor: pointer; margin: 10px; text-shadow: 2px 2px #000; }
-        .btn-small { padding: 10px 20px; font-size: 1rem; background: #444; }
+        /* Buttons */
+        .btn { padding: 15px 40px; background: var(--gd-blue); border: 4px solid white; color: white; font-size: 1.2rem; font-weight: 900; border-radius: 12px; cursor: pointer; margin: 8px; text-shadow: 2px 2px #000; }
+        .btn-small { padding: 8px 15px; font-size: 0.9rem; background: #333; }
         
-        .selector { display: flex; align-items: center; gap: 30px; }
-        .arrow { background: none; border: none; color: white; font-size: 5rem; cursor: pointer; }
+        /* Layouts */
+        .home-footer { position: absolute; bottom: 15px; font-size: 0.7rem; color: #666; text-align: center; line-height: 1.4; }
+        .selector { display: flex; align-items: center; gap: 20px; }
+        .arrow { background: none; border: none; color: white; font-size: 4rem; cursor: pointer; }
         
-        #pause-btn { position: fixed; top: 15px; right: 15px; width: 50px; height: 50px; background: rgba(255,255,255,0.2); border: 2px solid white; color: white; border-radius: 10px; z-index: 5000; }
-        #hud { position: fixed; top: 15px; left: 15px; z-index: 100; color: var(--neon); font-size: 1.2rem; pointer-events: none; }
+        #hud { position: fixed; top: 15px; left: 15px; z-index: 100; color: var(--neon); font-size: 1.1rem; pointer-events: none; }
+        #pause-trigger { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: rgba(255,255,255,0.1); border: 2px solid white; color: white; border-radius: 8px; z-index: 5000; }
+        
         canvas { display: block; width: 100vw; height: 100vh; }
+        .coming-soon { color: #555; font-size: 0.8rem; font-style: italic; }
     </style>
 </head>
 <body>
 
     <div id="hud" class="hidden">ATTEMPTS: <span id="att-val">1</span> | <span id="progress-val">0%</span></div>
-    <button id="pause-btn" class="hidden" onclick="pauseGame()">||</button>
+    <button id="pause-trigger" class="hidden" onclick="togglePause(true)">||</button>
 
     <div id="menu-home" class="overlay">
-        <h1 style="font-size: 3.5rem; text-shadow: 0 0 20px var(--neon); margin:0;">GD ODYSSEY</h1>
+        <h1 style="font-size: 3rem; text-shadow: 0 0 15px var(--neon); margin:0;">GD ODYSSEY</h1>
         <button class="btn" onclick="nav('menu-levels')">PLAY</button>
-        <button class="btn btn-small" onclick="nav('menu-icons')">ICON KIT</button>
+        <div style="display:flex;">
+            <button class="btn btn-small" onclick="nav('menu-icons')">ICON KIT</button>
+            <button class="btn btn-small" onclick="nav('menu-more')">MORE</button>
+        </div>
+        
+        <div class="home-footer">
+            CREDITS: ziadmohamed38-mf8<br>
+            TOOLS: GITHUB • VERCEL • MEDIAN
+        </div>
+    </div>
+
+    <div id="menu-more" class="overlay hidden">
+        <h2>ADVANCEMENTS & STATS</h2>
+        <div style="text-align:left; background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:280px;">
+            <p>Total Jumps: <span id="stat-jumps">0</span></p>
+            <p>Levels Completed: <span id="stat-wins">0</span></p>
+            <hr border="1" color="#333">
+            <p class="coming-soon">EDITOR (COMING SOON)</p>
+            <p class="coming-soon">ONLINE PLAY (COMING SOON)</p>
+        </div>
+        <button class="btn btn-small" onclick="nav('menu-home')">BACK</button>
     </div>
 
     <div id="menu-icons" class="overlay hidden">
-        <h2>ICON COLOR</h2>
-        <div style="display:flex; gap:15px; margin-bottom: 20px;">
-            <div onclick="setColor('#0ff')" style="width:60px; height:60px; background:#0ff; border:4px solid white; cursor:pointer;"></div>
-            <div onclick="setColor('#f0f')" style="width:60px; height:60px; background:#f0f; border:4px solid white; cursor:pointer;"></div>
-            <div onclick="setColor('#ffff00')" style="width:60px; height:60px; background:#ffff00; border:4px solid white; cursor:pointer;"></div>
+        <h2>ICON KIT</h2>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div onclick="setColor('#0ff')" style="width:50px; height:50px; background:#0ff; border:3px solid white;"></div>
+            <div onclick="setColor('#f0f')" style="width:50px; height:50px; background:#f0f; border:3px solid white;"></div>
+            <div onclick="setColor('#ff0')" style="width:50px; height:50px; background:#ff0; border:3px solid white;"></div>
         </div>
         <button class="btn" onclick="nav('menu-home')">SAVE</button>
     </div>
@@ -47,9 +71,9 @@
     <div id="menu-levels" class="overlay hidden">
         <div class="selector">
             <button class="arrow" onclick="changeLvl(-1)">◀</button>
-            <div style="text-align: center; border: 4px solid #333; padding: 40px; border-radius: 25px; background: rgba(255,255,255,0.05); width: 320px;">
+            <div style="text-align: center; border: 3px solid #444; padding: 30px; border-radius: 20px; width:260px;">
                 <h2 id="lvl-name">WELCOMING TIME</h2>
-                <div id="lvl-mode" style="color:#aaa; margin-bottom:10px;">MODE: SHIP</div>
+                <div id="lvl-mode" style="color:#888; margin-bottom:10px;">MODE: SHIP</div>
                 <button class="btn" onclick="startGame()">START</button>
             </div>
             <button class="arrow" onclick="changeLvl(1)">▶</button>
@@ -57,15 +81,10 @@
         <button class="btn btn-small" onclick="nav('menu-home')">BACK</button>
     </div>
 
-    <div id="menu-win" class="overlay hidden">
-        <h1 style="color:var(--gold); font-size: 3rem;">LEVEL COMPLETE!</h1>
-        <button class="btn" onclick="nav('menu-levels')">MENU</button>
-    </div>
-
     <div id="menu-pause" class="overlay hidden">
-        <h1>PAUSED</h1>
-        <button class="btn" onclick="resumeGame()">RESUME</button>
-        <button class="btn btn-small" onclick="location.reload()">QUIT</button>
+        <h1 style="color:var(--neon)">PAUSED</h1>
+        <button class="btn" onclick="togglePause(false)">RESUME</button>
+        <button class="btn btn-small" style="background:#600" onclick="location.reload()">QUIT</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -74,13 +93,13 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let state = 'MENU', att = 1, camX = 0, currentIdx = 0, paused = false;
-        let playerColor = '#0ff';
+        let playerColor = '#0ff', totalJumps = 0, wins = 0;
 
         const levels = [
-            { name: 'WELCOMING TIME', mode: 'ship', len: 5000, color: '#0ff' },
-            { name: 'BACK ON TIME', mode: 'cube', len: 6000, color: '#f0f' },
-            { name: 'POLAR DICE', mode: 'cube', len: 7000, color: '#0f0' },
-            { name: 'DRY DESERT', mode: 'cube', len: 8500, color: '#ff9900' }
+            { name: 'WELCOMING TIME', mode: 'ship', len: 5500, color: '#0cc' },
+            { name: 'BACK ON TIME', mode: 'cube', len: 6500, color: '#c0c' },
+            { name: 'POLAR DICE', mode: 'cube', len: 7500, color: '#0c0' },
+            { name: 'DRY DESERT', mode: 'cube', len: 9000, color: '#c60' }
         ];
 
         let p = { x: 250, y: 0, vy: 0, size: 42, rot: 0, isShip: false, isHold: false, flipped: false };
@@ -90,11 +109,14 @@
 
         window.nav = (id) => {
             document.querySelectorAll('.overlay').forEach(m => m.classList.add('hidden'));
-            if(id !== 'none') document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'menu-more') {
+                document.getElementById('stat-jumps').innerText = totalJumps;
+                document.getElementById('stat-wins').innerText = wins;
+            }
         };
 
         window.setColor = (c) => { playerColor = c; };
-
         window.changeLvl = (dir) => {
             currentIdx = (currentIdx + dir + levels.length) % levels.length;
             document.getElementById('lvl-name').innerText = levels[currentIdx].name;
@@ -102,35 +124,117 @@
         };
 
         window.startGame = () => {
-            state = 'PLAY';
-            nav('none');
+            state = 'PLAY'; nav('none');
             document.getElementById('hud').classList.remove('hidden');
-            document.getElementById('pause-btn').classList.remove('hidden');
+            document.getElementById('pause-trigger').classList.remove('hidden');
             resetGame();
         };
 
-        window.pauseGame = () => { paused = true; nav('menu-pause'); };
-        window.resumeGame = () => { paused = false; nav('none'); };
+        window.togglePause = (val) => {
+            paused = val;
+            nav(val ? 'menu-pause' : 'none');
+        };
 
         function resetGame() {
             camX = 0; p.vy = 0; p.rot = 0; p.flipped = false;
             p.isShip = (levels[currentIdx].mode === 'ship');
             p.y = canvas.height * 0.75 - p.size;
             
-            // Build level based on selection
-            if(currentIdx === 3) { // Dry Desert
-                world = [
-                    {x: 1000, t: 's'}, {x: 1500, t: 's'}, {x: 1545, t: 's'}, // Double spike
-                    {x: 2200, t: 'p'}, {x: 3000, t: 's', y: 150}, {x: 4000, t: 'p'},
-                    {x: 5000, t: 's'}, {x: 6000, t: 's'}, {x: 7500, t: 's'}
-                ];
-            } else {
-                world = [{x: 1200, t: 's'}, {x: 2000, t: 'p'}, {x: 2800, t: 's', y: 150}, {x: 3500, t: 'p'}];
+            // ACTUAL GAMEPLAY - Level Generation
+            world = [];
+            const spacing = 800;
+            for(let i=1; i<=10; i++) {
+                world.push({x: i * spacing, t: 's'}); // Spikes
+                if(i % 3 === 0) world.push({x: i * spacing + 400, t: 'p'}); // Portals
+                if(currentIdx === 3 && i % 2 === 0) world.push({x: i * spacing + 50, t: 's'}); // Double spikes in desert
             }
         }
 
         function handleInput(down) {
-            if (paused) return;
+            if (paused || state !== 'PLAY') return;
             p.isHold = down;
             const floor = canvas.height * 0.75;
-            const onSurface = p.flipped ? (p.y <= 65) : (p
+            const onSurface = p.flipped ? (p.y <= 70) : (p.y >= floor - p.size - 5);
+            if (down && !p.isShip && onSurface) {
+                p.vy = p.flipped ? 1300 : -1300;
+                totalJumps++;
+            }
+        }
+
+        window.addEventListener('touchstart', (e) => { 
+            if(e.target.tagName !== 'BUTTON') { e.preventDefault(); handleInput(true); }
+        }, {passive: false});
+        window.addEventListener('touchend', () => handleInput(false));
+        window.addEventListener('mousedown', (e) => { if(e.target.tagName !== 'BUTTON') handleInput(true); });
+        window.addEventListener('mouseup', () => handleInput(false));
+
+        function update(dt) {
+            if (state !== 'PLAY' || paused) return;
+            let gDir = p.flipped ? -1 : 1;
+
+            if (p.isShip) {
+                p.vy += (p.isHold ? -3800 : 2800) * gDir * dt;
+                p.rot = p.vy * 0.12;
+            } else {
+                p.vy += (5000 * gDir) * dt;
+                const floor = canvas.height * 0.75;
+                if ((!p.flipped && p.y < floor - p.size) || (p.flipped && p.y > 70)) p.rot += 550 * dt;
+                else p.rot = Math.round(p.rot / 90) * 90;
+            }
+
+            p.y += p.vy * dt; camX += 800 * dt;
+            const floor = canvas.height * 0.75;
+            if (!p.flipped && p.y > floor - p.size) { p.y = floor - p.size; p.vy = 0; }
+            if (p.flipped && p.y < 70) { p.y = 70; p.vy = 0; }
+
+            world.forEach(obj => {
+                let ox = obj.x - camX + p.x;
+                let oy = obj.y || (p.flipped ? 70 : floor - 50);
+                if (p.x < ox + 42 && p.x + 38 > ox && p.y < oy + 50 && p.y + 38 > oy) {
+                    if (obj.t === 's') { att++; document.getElementById('att-val').innerText = att; resetGame(); }
+                    else if (obj.t === 'p') { p.flipped = !p.flipped; obj.x = -9999; }
+                }
+            });
+
+            let progress = Math.min(Math.floor((camX / levels[currentIdx].len) * 100), 100);
+            document.getElementById('progress-val').innerText = progress + "%";
+            if(progress >= 100) { wins++; state = 'MENU'; nav('menu-home'); alert("LEVEL COMPLETE!"); }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const floor = canvas.height * 0.75;
+            ctx.fillStyle = levels[currentIdx].color;
+            ctx.fillRect(0, floor, canvas.width, 10);
+            ctx.fillRect(0, 70, canvas.width, 10);
+
+            if (state === 'PLAY') {
+                ctx.save();
+                ctx.translate(p.x + 21, p.y + 21); ctx.rotate(p.rot * Math.PI / 180);
+                ctx.fillStyle = playerColor; ctx.fillRect(-21, -21, 42, 42);
+                ctx.strokeStyle = "white"; ctx.lineWidth = 3; ctx.strokeRect(-21, -21, 42, 42);
+                ctx.restore();
+
+                world.forEach(obj => {
+                    let ox = obj.x - camX + p.x;
+                    let oy = obj.y || (p.flipped ? 70 : floor);
+                    if (obj.t === 's') {
+                        ctx.fillStyle = '#ff3366'; ctx.beginPath();
+                        ctx.moveTo(ox, oy); ctx.lineTo(ox+25, oy - (p.flipped ? -50 : 50)); ctx.lineTo(ox+50, oy); ctx.fill();
+                    } else if (obj.t === 'p') {
+                        ctx.fillStyle = '#00ff66'; ctx.fillRect(ox, 70, 30, floor - 70);
+                    }
+                });
+            }
+        }
+
+        function loop(t) {
+            let dt = Math.min((t - (this.lt || t)) / 1000, 0.016);
+            this.lt = t; update(dt); draw();
+            requestAnimationFrame(loop);
+        }
+
+        init(); requestAnimationFrame(loop); window.onresize = init;
+    </script>
+</body>
+</html>
