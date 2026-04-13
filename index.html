@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Geometry Dash Odyssey</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="hud" class="hidden">ATTEMPTS: <span id="att-val">1</span> | <span id="progress-val">0%</span></div>
+
+    <div id="menu-home" class="overlay">
+        <h1 class="main-title">GEOMETRY DASH<br><span>ODYSSEY</span></h1>
+        <div class="btn-group">
+            <button class="btn main-btn" onclick="nav('menu-levels')">PLAY</button>
+            <button class="btn" onclick="alert('Coming Soon')">ICON KIT</button>
+        </div>
+    </div>
+
+    <div id="menu-levels" class="overlay hidden">
+        <div class="selector-container">
+            <button class="arrow" onclick="changeLvl(-1)">◀</button>
+            <div class="level-box">
+                <h2 id="lvl-name">WELCOMING TIME</h2>
+                <div id="lvl-stars" style="color:yellow; font-size:1.5rem; margin:10px 0;">⭐ 1</div>
+                <div id="lvl-best">BEST: 0%</div>
+                <button class="btn start-btn" onclick="startGame()">PLAY</button>
+            </div>
+            <button class="arrow" onclick="changeLvl(1)">▶</button>
+        </div>
+        <button class="btn back-btn" onclick="nav('menu-home')" style="margin-top:30px;">BACK</button>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>
