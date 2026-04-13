@@ -6,28 +6,42 @@
     <title>GD Odyssey</title>
     <style>
         :root { --neon: #00ffff; --gd-blue: #2874fc; --gold: #ffcf40; }
-        body { margin: 0; background: #000; overflow: hidden; font-family: 'Arial Black', sans-serif; touch-action: none; color: white; user-select: none; }
+        body { 
+            margin: 0; background: #000; overflow: hidden; 
+            font-family: 'Arial Black', sans-serif; touch-action: none; 
+            color: white; user-select: none; -webkit-tap-highlight-color: transparent;
+        }
         
-        /* High-Priority UI */
-        .overlay { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); z-index: 10000; pointer-events: auto; }
+        /* UI Layer */
+        .overlay { 
+            position: fixed; inset: 0; display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; background: rgba(0,0,0,0.9); 
+            z-index: 10000; pointer-events: auto; 
+        }
         .hidden { display: none !important; }
         
         .btn { 
             padding: 15px 40px; background: var(--gd-blue); border: 4px solid white; 
             color: white; font-size: 1.2rem; font-weight: 900; border-radius: 12px; 
-            cursor: pointer; margin: 8px; text-shadow: 2px 2px #000; pointer-events: auto;
+            cursor: pointer; margin: 8px; text-shadow: 2px 2px #000;
+            transition: transform 0.1s; position: relative; z-index: 10001;
         }
+        .btn:active { transform: scale(0.95); }
         .btn-small { padding: 8px 15px; font-size: 0.9rem; background: #333; }
         
-        .home-footer { position: absolute; bottom: 15px; font-size: 0.7rem; color: #666; text-align: center; line-height: 1.4; pointer-events: none; }
-        .selector { display: flex; align-items: center; gap: 20px; pointer-events: auto; }
-        .arrow { background: none; border: none; color: white; font-size: 4rem; cursor: pointer; }
+        .home-footer { position: absolute; bottom: 15px; font-size: 0.7rem; color: #666; text-align: center; pointer-events: none; }
+        .selector { display: flex; align-items: center; gap: 20px; }
+        .arrow { background: none; border: none; color: white; font-size: 4rem; cursor: pointer; padding: 10px; }
         
         #hud { position: fixed; top: 15px; left: 15px; z-index: 100; color: var(--neon); font-size: 1.1rem; pointer-events: none; }
-        #pause-trigger { position: fixed; top: 15px; right: 15px; width: 45px; height: 45px; background: rgba(255,255,255,0.1); border: 2px solid white; color: white; border-radius: 8px; z-index: 5000; pointer-events: auto; }
+        #pause-trigger { 
+            position: fixed; top: 15px; right: 15px; width: 50px; height: 50px; 
+            background: rgba(255,255,255,0.1); border: 2px solid white; color: white; 
+            border-radius: 8px; z-index: 11000; cursor: pointer;
+        }
         
-        canvas { display: block; width: 100vw; height: 100vh; }
-        .coming-soon { color: #555; font-size: 0.8rem; font-style: italic; margin: 5px 0; }
+        canvas { display: block; width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 1; }
+        .coming-soon { color: #555; font-size: 0.8rem; font-style: italic; }
     </style>
 </head>
 <body>
@@ -42,7 +56,6 @@
             <button class="btn btn-small" onclick="nav('menu-icons')">ICON KIT</button>
             <button class="btn btn-small" onclick="nav('menu-more')">MORE</button>
         </div>
-        
         <div class="home-footer">
             CREDITS: ziadmohamedali-wq<br>
             TOOLS: GITHUB • VERCEL • MEDIAN
@@ -50,11 +63,11 @@
     </div>
 
     <div id="menu-more" class="overlay hidden">
-        <h2>STATS & ADVANCEMENTS</h2>
-        <div style="text-align:left; background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:280px; margin-bottom: 20px;">
+        <h2>STATS & DATA</h2>
+        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:280px; margin-bottom: 15px;">
             <p>Total Jumps: <span id="stat-jumps">0</span></p>
             <p>Levels Completed: <span id="stat-wins">0</span></p>
-            <hr color="#333" style="margin: 15px 0;">
+            <hr color="#333">
             <p class="coming-soon">EDITOR (COMING SOON)</p>
             <p class="coming-soon">ONLINE PLAY (COMING SOON)</p>
         </div>
@@ -62,11 +75,11 @@
     </div>
 
     <div id="menu-icons" class="overlay hidden">
-        <h2>ICON KIT</h2>
+        <h2>CHOOSE COLOR</h2>
         <div style="display:flex; gap:10px; margin-bottom:20px;">
-            <div onclick="setColor('#0ff')" style="width:55px; height:55px; background:#0ff; border:3px solid white; cursor:pointer;"></div>
-            <div onclick="setColor('#f0f')" style="width:55px; height:55px; background:#f0f; border:3px solid white; cursor:pointer;"></div>
-            <div onclick="setColor('#ff0')" style="width:55px; height:55px; background:#ff0; border:3px solid white; cursor:pointer;"></div>
+            <div onclick="setColor('#0ff')" style="width:60px; height:60px; background:#0ff; border:4px solid white; cursor:pointer;"></div>
+            <div onclick="setColor('#f0f')" style="width:60px; height:60px; background:#f0f; border:4px solid white; cursor:pointer;"></div>
+            <div onclick="setColor('#ffff00')" style="width:60px; height:60px; background:#ffff00; border:4px solid white; cursor:pointer;"></div>
         </div>
         <button class="btn" onclick="nav('menu-home')">SAVE</button>
     </div>
@@ -74,7 +87,7 @@
     <div id="menu-levels" class="overlay hidden">
         <div class="selector">
             <button class="arrow" onclick="changeLvl(-1)">◀</button>
-            <div style="text-align: center; border: 3px solid #444; padding: 30px; border-radius: 20px; width:260px;">
+            <div style="text-align: center; border: 3px solid #444; padding: 30px; border-radius: 20px; width:260px; background: rgba(0,0,0,0.5);">
                 <h2 id="lvl-name">WELCOMING TIME</h2>
                 <div id="lvl-mode" style="color:#888; margin-bottom:10px;">MODE: SHIP</div>
                 <button class="btn" onclick="startGame()">START</button>
@@ -87,7 +100,7 @@
     <div id="menu-pause" class="overlay hidden">
         <h1 style="color:var(--neon)">PAUSED</h1>
         <button class="btn" onclick="togglePause(false)">RESUME</button>
-        <button class="btn btn-small" style="background:#600" onclick="location.reload()">QUIT</button>
+        <button class="btn btn-small" onclick="location.reload()">QUIT</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -99,20 +112,23 @@
         let playerColor = '#0ff', totalJumps = 0, wins = 0;
 
         const levels = [
-            { name: 'WELCOMING TIME', mode: 'ship', len: 5500, color: '#0cc' },
-            { name: 'BACK ON TIME', mode: 'cube', len: 6500, color: '#c0c' },
-            { name: 'POLAR DICE', mode: 'cube', len: 7500, color: '#0c0' },
-            { name: 'DRY DESERT', mode: 'cube', len: 9000, color: '#c60' }
+            { name: 'WELCOMING TIME', mode: 'ship', len: 6000, color: '#0cc' },
+            { name: 'BACK ON TIME', mode: 'cube', len: 7000, color: '#c0c' },
+            { name: 'POLAR DICE', mode: 'cube', len: 8000, color: '#0c0' },
+            { name: 'DRY DESERT', mode: 'cube', len: 10000, color: '#c60' }
         ];
 
         let p = { x: 250, y: 0, vy: 0, size: 42, rot: 0, isShip: false, isHold: false, flipped: false };
         let world = [];
 
-        function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        function init() { 
+            canvas.width = window.innerWidth; 
+            canvas.height = window.innerHeight; 
+        }
 
         window.nav = (id) => {
             document.querySelectorAll('.overlay').forEach(m => m.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
+            if(id !== 'none') document.getElementById(id).classList.remove('hidden');
             if(id === 'menu-more') {
                 document.getElementById('stat-jumps').innerText = totalJumps;
                 document.getElementById('stat-wins').innerText = wins;
@@ -127,7 +143,8 @@
         };
 
         window.startGame = () => {
-            state = 'PLAY'; nav('none');
+            state = 'PLAY'; 
+            nav('none');
             document.getElementById('hud').classList.remove('hidden');
             document.getElementById('pause-trigger').classList.remove('hidden');
             resetGame();
@@ -144,35 +161,40 @@
             p.y = canvas.height * 0.75 - p.size;
             
             world = [];
-            const spacing = 800;
+            const spacing = 900;
             for(let i=1; i<=15; i++) {
                 world.push({x: i * spacing, t: 's'}); 
-                if(i % 3 === 0) world.push({x: i * spacing + 400, t: 'p'}); 
-                if(currentIdx === 3 && i % 2 === 0) world.push({x: i * spacing + 55, t: 's'}); 
+                if(i % 3 === 0) world.push({x: i * spacing + 450, t: 'p'}); 
+                if(currentIdx === 3 && i % 2 === 0) world.push({x: i * spacing + 60, t: 's'}); 
             }
         }
 
-        function handleInput(down) {
-            if (paused || state !== 'PLAY') return;
-            p.isHold = down;
-            const floor = canvas.height * 0.75;
-            const onSurface = p.flipped ? (p.y <= 70) : (p.y >= floor - p.size - 5);
-            if (down && !p.isShip && onSurface) {
-                p.vy = p.flipped ? 1300 : -1300;
-                totalJumps++;
+        // --- THE FIXED INPUT HANDLER ---
+        function handleGlobalInput(e, isDown) {
+            // If the user clicks a button, let the button handle it
+            if (e.target.tagName === 'BUTTON' || e.target.closest('.btn') || e.target.closest('.arrow')) {
+                return; 
+            }
+            
+            if (state === 'PLAY' && !paused) {
+                if (isDown) {
+                    p.isHold = true;
+                    const floor = canvas.height * 0.75;
+                    const onSurface = p.flipped ? (p.y <= 75) : (p.y >= floor - p.size - 10);
+                    if (!p.isShip && onSurface) {
+                        p.vy = p.flipped ? 1300 : -1300;
+                        totalJumps++;
+                    }
+                } else {
+                    p.isHold = false;
+                }
             }
         }
 
-        // IMPROVED INPUT FOR APK
-        window.addEventListener('touchstart', (e) => { 
-            if(e.target.tagName !== 'BUTTON' && e.target.parentElement?.tagName !== 'BUTTON') { 
-                e.preventDefault(); 
-                handleInput(true); 
-            }
-        }, {passive: false});
-        window.addEventListener('touchend', () => handleInput(false));
-        window.addEventListener('mousedown', (e) => { if(e.target.tagName !== 'BUTTON') handleInput(true); });
-        window.addEventListener('mouseup', () => handleInput(false));
+        window.addEventListener('touchstart', (e) => handleGlobalInput(e, true), {passive: false});
+        window.addEventListener('touchend', (e) => handleGlobalInput(e, false));
+        window.addEventListener('mousedown', (e) => handleGlobalInput(e, true));
+        window.addEventListener('mouseup', (e) => handleGlobalInput(e, false));
 
         function update(dt) {
             if (state !== 'PLAY' || paused) return;
@@ -184,18 +206,18 @@
             } else {
                 p.vy += (5000 * gDir) * dt;
                 const floor = canvas.height * 0.75;
-                if ((!p.flipped && p.y < floor - p.size) || (p.flipped && p.y > 70)) p.rot += 550 * dt;
+                if ((!p.flipped && p.y < floor - p.size) || (p.flipped && p.y > 75)) p.rot += 550 * dt;
                 else p.rot = Math.round(p.rot / 90) * 90;
             }
 
             p.y += p.vy * dt; camX += 800 * dt;
             const floor = canvas.height * 0.75;
             if (!p.flipped && p.y > floor - p.size) { p.y = floor - p.size; p.vy = 0; }
-            if (p.flipped && p.y < 70) { p.y = 70; p.vy = 0; }
+            if (p.flipped && p.y < 75) { p.y = 75; p.vy = 0; }
 
             world.forEach(obj => {
                 let ox = obj.x - camX + p.x;
-                let oy = obj.y || (p.flipped ? 70 : floor - 50);
+                let oy = obj.y || (p.flipped ? 75 : floor - 50);
                 if (p.x < ox + 42 && p.x + 38 > ox && p.y < oy + 50 && p.y + 38 > oy) {
                     if (obj.t === 's') { att++; document.getElementById('att-val').innerText = att; resetGame(); }
                     else if (obj.t === 'p') { p.flipped = !p.flipped; obj.x = -9999; }
@@ -212,7 +234,7 @@
             const floor = canvas.height * 0.75;
             ctx.fillStyle = levels[currentIdx].color;
             ctx.fillRect(0, floor, canvas.width, 10);
-            ctx.fillRect(0, 70, canvas.width, 10);
+            ctx.fillRect(0, 75, canvas.width, 10);
 
             if (state === 'PLAY') {
                 ctx.save();
@@ -223,12 +245,12 @@
 
                 world.forEach(obj => {
                     let ox = obj.x - camX + p.x;
-                    let oy = obj.y || (p.flipped ? 70 : floor);
+                    let oy = obj.y || (p.flipped ? 75 : floor);
                     if (obj.t === 's') {
                         ctx.fillStyle = '#ff3366'; ctx.beginPath();
                         ctx.moveTo(ox, oy); ctx.lineTo(ox+25, oy - (p.flipped ? -50 : 50)); ctx.lineTo(ox+50, oy); ctx.fill();
                     } else if (obj.t === 'p') {
-                        ctx.fillStyle = '#00ff66'; ctx.fillRect(ox, 70, 30, floor - 70);
+                        ctx.fillStyle = '#00ff66'; ctx.fillRect(ox, 75, 30, floor - 75);
                     }
                 });
             }
