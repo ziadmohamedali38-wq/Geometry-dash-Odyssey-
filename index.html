@@ -12,7 +12,7 @@
     <button id="pause-trigger" class="hidden" onclick="togglePause(true)">||</button>
 
     <div id="menu-home" class="overlay">
-        <h1>GD ODYSSEY</h1>
+        <h1 style="font-size: 3rem; text-shadow: 0 0 15px var(--neon); margin:0;">GD ODYSSEY</h1>
         <button class="btn" onclick="nav('menu-levels')">PLAY</button>
         <div style="display:flex;">
             <button class="btn btn-small" onclick="nav('menu-icons')">ICON KIT</button>
@@ -23,7 +23,48 @@
             TOOLS: GITHUB • VERCEL • MEDIAN
         </div>
     </div>
-.
+
+    <div id="menu-more" class="overlay hidden">
+        <h2>STATS & DATA</h2>
+        <div style="background:rgba(255,255,255,0.1); padding:20px; border-radius:15px; width:280px; margin-bottom: 15px;">
+            <p>Total Jumps: <span id="stat-jumps">0</span></p>
+            <p>Levels Completed: <span id="stat-wins">0</span></p>
+            <hr color="#333">
+            <p class="coming-soon">EDITOR (COMING SOON)</p>
+            <p class="coming-soon">ONLINE PLAY (COMING SOON)</p>
+        </div>
+        <button class="btn btn-small" onclick="nav('menu-home')">BACK</button>
+    </div>
+
+    <div id="menu-icons" class="overlay hidden">
+        <h2>CHOOSE COLOR</h2>
+        <div style="display:flex; gap:10px; margin-bottom:20px;">
+            <div onclick="setColor('#0ff')" style="width:60px; height:60px; background:#0ff; border:4px solid white; cursor:pointer;"></div>
+            <div onclick="setColor('#f0f')" style="width:60px; height:60px; background:#f0f; border:4px solid white; cursor:pointer;"></div>
+            <div onclick="setColor('#ffff00')" style="width:60px; height:60px; background:#ffff00; border:4px solid white; cursor:pointer;"></div>
+        </div>
+        <button class="btn" onclick="nav('menu-home')">SAVE</button>
+    </div>
+
+    <div id="menu-levels" class="overlay hidden">
+        <div class="selector">
+            <button class="arrow" onclick="changeLvl(-1)">◀</button>
+            <div style="text-align: center; border: 3px solid #444; padding: 30px; border-radius: 20px; width:260px; background: rgba(0,0,0,0.5);">
+                <h2 id="lvl-name">WELCOMING TIME</h2>
+                <div id="lvl-mode" style="color:#888; margin-bottom:10px;">MODE: SHIP</div>
+                <button class="btn" onclick="startGame()">START</button>
+            </div>
+            <button class="arrow" onclick="changeLvl(1)">▶</button>
+        </div>
+        <button class="btn btn-small" onclick="nav('menu-home')">BACK</button>
+    </div>
+
+    <div id="menu-pause" class="overlay hidden">
+        <h1 style="color:var(--neon)">PAUSED</h1>
+        <button class="btn" onclick="togglePause(false)">RESUME</button>
+        <button class="btn btn-small" onclick="location.reload()">QUIT</button>
+    </div>
+
     <canvas id="gameCanvas"></canvas>
 
     <script src="game.js"></script>
