@@ -14,7 +14,10 @@ const SPEED = 700, GRAVITY = 4900, JUMP = -1180;
 let p = { x: 300, y: 0, vy: 0, size: 40, rot: 0, isShip: false, isHold: false, onG: false, flipped: false };
 let world = [];
 
-function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+function init() { 
+    canvas.width = window.innerWidth; 
+    canvas.height = window.innerHeight; 
+}
 
 window.nav = function(id) {
     document.querySelectorAll('.overlay').forEach(m => m.classList.add('hidden'));
@@ -37,7 +40,8 @@ function updateUI() {
 }
 
 window.startGame = function() {
-    state = 'PLAY'; window.nav('none');
+    state = 'PLAY'; 
+    window.nav('none');
     document.getElementById('hud').classList.remove('hidden');
     resetLvl();
 };
@@ -48,11 +52,10 @@ function resetLvl() {
     p.isShip = (l.mode === 'ship');
     const floor = canvas.height * 0.75;
     p.y = floor - p.size;
-
-    if (currentIdx === 0) world = [{x: 1000, t: 's'}, {x: 1600, t: 's'}, {x: 2200, t: 's'}];
-    else if (currentIdx === 1) world = [{x: 900, t: 'pad'}, {x: 1500, t: 's'}, {x: 2000, t: 'pad'}];
-    else if (currentIdx === 2) world = [{x: 1100, t: 'orb'}, {x: 1700, t: 'orb'}, {x: 2300, t: 's'}];
-    else world = [{x: 1000, t: 'portal'}, {x: 1600, t: 's', y: 150}, {x: 2200, t: 'portal'}];
+    world = currentIdx === 0 ? [{x: 1000, t: 's'}, {x: 1600, t: 's'}] : 
+            currentIdx === 1 ? [{x: 900, t: 'pad'}, {x: 1500, t: 's'}] :
+            currentIdx === 2 ? [{x: 1100, t: 'orb'}, {x: 1800, t: 's'}] :
+                               [{x: 1000, t: 'portal'}, {x: 1600, t: 's', y: 150}];
 }
 
 function update(dt) {
@@ -103,9 +106,27 @@ function draw() {
 }
 
 function die() { att++; document.getElementById('att-val').innerText = att; resetLvl(); }
-function loop(t) { let dt = Math.min((t - (this.lt||t))/1000, 0.016); this.lt = t; update(dt); draw(); requestAnimationFrame(loop); }
-const input = (v) => { p.isHold = v; if(v && !p.isShip && p.onG) p.vy = JUMP * (p.flipped ? -1 : 1); };
-window.addEventListener('mousedown', () => input(true)); window.addEventListener('mouseup', () => input(false));
-window.addEventListener('touchstart', (e) => { e.preventDefault(); input(true); }, {passive: false});
-window.addEventListener('touchend', () => input(false));
-init(); requestAnimationFrame(loop); window.onresize = init;
+
+// --- THE INPUT FIX ---
+function handleStart(e) {
+    if (e.target.tagName === 'BUTTON') return; // Don't jump when clicking menu buttons
+    p.isHold = true;
+    if (state === 'PLAY' && !p.isShip && p.onG) p.vy = JUMP * (p.flipped ? -1 : 1);
+}
+
+function handleEnd() { p.isHold = false; }
+
+window.addEventListener('mousedown', handleStart);
+window.addEventListener('mouseup', handleEnd);
+window.addEventListener('touchstart', (e) => { handleStart(e); }, { passive: false });
+window.addEventListener('touchend', handleEnd);
+
+function loop(t) { 
+    let dt = Math.min((t - (this.lt||t))/1000, 0.016); 
+    this.lt = t; update(dt); draw(); 
+    requestAnimationFrame(loop); 
+}
+
+init(); 
+requestAnimationFrame(loop); 
+window.onresize = init;
