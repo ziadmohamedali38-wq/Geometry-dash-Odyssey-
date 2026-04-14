@@ -1,7 +1,7 @@
+// --- 1. FIREBASE MODULE SETUP ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
-// --- 1. FIREBASE CONFIGURATION ---
 const firebaseConfig = {
     apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
     authDomain: "geometry-dash-odessy.firebaseapp.com",
@@ -16,117 +16,135 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// --- 2. ENGINE SETUP & CONSTANTS ---
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-const CONFIG = {
-    GRAVITY: 0.9,
-    JUMP_FORCE: -13,
-    SPEED: 5,
-    GROUND_Y: 360,
-    CUBE_SIZE: 30
+// Function to trigger login (Call this from your 'Social Login' button)
+window.loginWithGoogle = async () => {
+    try {
+        const result = await signInWithPopup(auth, provider);
+        alert("Logged in as: " + result.user.displayName);
+    } catch (error) {
+        console.error(error);
+    }
 };
 
-let gameState = {
-    player: {
-        x: 80,
-        y: 300,
-        vy: 0,
-        rotation: 0,
-        isGrounded: false,
-        isDead: false
-    },
-    level: {
-        offset: 0,
-        obstacles: [
-            { x: 600, y: 330, w: 30, h: 30 },
-            { x: 900, y: 330, w: 30, h: 30 },
-            { x: 1200, y: 280, w: 30, h: 80 } // A tall pillar
-        ]
-    },
-    attempts: 1
+// --- 2. YOUR ORIGINAL ENGINE (DO NOT TOUCH) ---
+let gameData = JSON.parse(localStorage.getItem('GDOdysseyData')) || { totalJumps: 0, wins: 0, playerColor: '#0ff', attempts: 1 };
+function save() { localStorage.setItem('GDOdysseyData', JSON.stringify(gameData)); }
+
+let noclip = false;
+let sessionSpeedMult = 1;
+
+const levels = [
+    { name: 'WELCOMING TIME', len: 10000, color: '#0cc', map: [[800,'s'],[1400,'s'],[2000,'s'],[2600,'s'],[3200,'p'],[4000,'s'],[4800,'s'],[5500,'s']] },
+    { name: 'BACK ON TIME', len: 15000, color: '#c0c', map: [[1000,'s'],[1800,'s'],[2600,'p'],[3400,'s'],[4200,'s'],[5000,'s'],[5800,'p'],[6500,'s']] }
+];
+
+let state='MENU', camX=0, currentIdx=0, paused=false;
+const canvas=document.getElementById('gameCanvas'), ctx=canvas.getContext('2d');
+let p = { x: 250, y: 0, vy: 0, size: 42, rot: 0, flipped: false, isHold: false };
+let world = [];
+
+function init() { canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+
+window.nav = (id) => {
+    document.querySelectorAll('.overlay').forEach(m=>m.classList.add('hidden'));
+    if(id!=='none') document.getElementById(id).classList.remove('hidden');
+    document.getElementById('stat-jumps').innerText = gameData.totalJumps;
+    document.getElementById('stat-wins').innerText = gameData.wins;
 };
 
-// --- 3. CORE PHYSICS ENGINE ---
-function applyPhysics() {
-    if (gameState.player.isDead) return;
+window.changeLvl = (dir) => {
+    currentIdx = (currentIdx + dir + levels.length) % levels.length;
+    document.getElementById('lvl-name').innerText = levels[currentIdx].name;
+};
 
-    // Apply Gravity
-    gameState.player.vy += CONFIG.GRAVITY;
-    gameState.player.y += gameState.player.vy;
+window.openDevTerminal = () => {
+    let pass = prompt("Enter Dev Key:");
+    if(pass === "7952") {
+        let cmd = prompt("Terminal: noclip, speedup, resetstats, setwins").toLowerCase();
+        if(cmd === "noclip") { noclip = !noclip; alert("NoClip: " + noclip); }
+        if(cmd === "speedup") { sessionSpeedMult = 1.5; alert("Speed Boost Active"); }
+        if(cmd === "resetstats") { gameData = {totalJumps:0, wins:0, playerColor:'#0ff', attempts:1}; save(); location.reload(); }
+        if(cmd === "setwins") { gameData.wins = parseInt(prompt("Set wins to:")); save(); }
+    } else { alert("Unauthorized."); }
+};
 
-    // Level Scroll
-    gameState.level.offset += CONFIG.SPEED;
+window.togglePause = (val) => { paused = val; nav(val ? 'menu-home' : 'none'); };
 
-    // Ground Collision
-    if (gameState.player.y + CONFIG.CUBE_SIZE > CONFIG.GROUND_Y) {
-        gameState.player.y = CONFIG.GROUND_Y - CONFIG.CUBE_SIZE;
-        gameState.player.vy = 0;
-        gameState.player.isGrounded = true;
-        
-        // Snap rotation to nearest 90deg upon landing
-        gameState.player.rotation = Math.round(gameState.player.rotation / 90) * 90;
-    } else {
-        gameState.player.isGrounded = false;
-        gameState.player.rotation += 6; // Mid-air spin
+window.startGame = () => { 
+    state='PLAY'; nav('none'); 
+    document.getElementById('hud').classList.remove('hidden');
+    document.getElementById('pause-trigger').classList.remove('hidden');
+    resetGame(); 
+};
+
+function resetGame() {
+    camX=0; p.vy=0; p.rot=0; p.flipped=false;
+    p.y = canvas.height*0.75 - p.size;
+    world = levels[currentIdx].map.map(o => ({x: o[0], t: o[1]}));
+    document.getElementById('att-val').innerText = gameData.attempts;
+}
+
+function handleJump(isDown, e) {
+    // THIS PREVENTS BUTTON INTERFERENCE
+    if(e && e.target.closest('.btn, .arrow, button')) return;
+    p.isHold = isDown;
+    if(state === 'PLAY' && isDown && !paused) {
+        const floor = canvas.height*0.75;
+        const onSurface = p.flipped ? (p.y <= 75) : (p.y >= floor - p.size - 8);
+        if(onSurface) { p.vy = p.flipped ? 1150 : -1150; gameData.totalJumps++; save(); }
+    }
+}
+
+window.addEventListener('touchstart', (e) => handleJump(true, e));
+window.addEventListener('touchend', (e) => handleJump(false, e));
+window.addEventListener('mousedown', (e) => handleJump(true, e)); // Added for desktop testing
+window.addEventListener('mouseup', (e) => handleJump(false, e));
+
+function update(dt) {
+    if(state!=='PLAY' || paused) return;
+    p.vy += 4800 * (p.flipped ? -1 : 1) * dt;
+    p.y += p.vy * dt; 
+    camX += (750 * sessionSpeedMult) * dt; 
+
+    const floor = canvas.height*0.75;
+    if(!p.flipped && p.y > floor-p.size) { p.y=floor-p.size; p.vy=0; p.rot=Math.round(p.rot/90)*90; }
+    else if(p.flipped && p.y < 75) { p.y=75; p.vy=0; p.rot=Math.round(p.rot/90)*90; }
+    else { p.rot += 480 * dt; }
+
+    if(!noclip) {
+        world.forEach(o => {
+            let ox = o.x - camX + p.x;
+            let oy = p.flipped ? 75 : floor;
+            if(p.x < ox+40 && p.x+35 > ox && Math.abs(p.y - (p.flipped ? 75 : floor-45)) < 40) {
+                if(o.t==='s') { gameData.attempts++; save(); resetGame(); }
+                if(o.t==='p') { p.flipped=!p.flipped; o.x=-9999; }
+            }
+        });
     }
 
-    checkCollisions();
+    let prog = Math.min(Math.floor((camX/levels[currentIdx].len)*100), 100);
+    document.getElementById('progress-val').innerText = prog + "%";
+    if(prog >= 100) { gameData.wins++; save(); state='MENU'; nav('menu-home'); }
 }
 
-function checkCollisions() {
-    gameState.level.obstacles.forEach(obj => {
-        let relativeX = obj.x - gameState.level.offset;
-        
-        // Box Collision detection
-        if (gameState.player.x < relativeX + obj.w &&
-            gameState.player.x + CONFIG.CUBE_SIZE > relativeX &&
-            gameState.player.y < obj.y + obj.h &&
-            gameState.player.y + CONFIG.CUBE_SIZE > obj.y) {
-            
-            handleDeath();
-        }
-    });
-}
-
-function handleDeath() {
-    gameState.player.isDead = true;
-    console.log("Crash! Restarting attempt:", gameState.attempts);
-    setTimeout(() => {
-        gameState.player.y = 300;
-        gameState.player.vy = 0;
-        gameState.player.isDead = false;
-        gameState.level.offset = 0;
-        gameState.attempts++;
-    }, 1000);
-}
-
-// --- 4. RENDERING SYSTEM ---
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    const floor = canvas.height*0.75;
+    ctx.fillStyle=levels[currentIdx].color; ctx.fillRect(0,floor,canvas.width,12); ctx.fillRect(0,75,canvas.width,12);
+    if(state==='PLAY') {
+        ctx.save(); ctx.translate(p.x+21, p.y+21); ctx.rotate(p.rot*Math.PI/180);
+        ctx.fillStyle=gameData.playerColor; ctx.fillRect(-21,-21,42,42);
+        if(noclip) { ctx.strokeStyle = 'lime'; ctx.lineWidth = 2; ctx.strokeRect(-21,-21,42,42); }
+        ctx.restore();
+        world.forEach(o => {
+            let ox = o.x - camX + p.x;
+            if(o.t==='s') { 
+                ctx.fillStyle='#ff3366'; ctx.beginPath(); 
+                ctx.moveTo(ox, p.flipped?75:floor); ctx.lineTo(ox+25, p.flipped?125:floor-50); ctx.lineTo(ox+50, p.flipped?75:floor); ctx.fill(); 
+            }
+        });
+    }
+}
 
-    // Draw Background/Floor
-    ctx.strokeStyle = "#555";
-    ctx.beginPath();
-    ctx.moveTo(0, CONFIG.GROUND_Y);
-    ctx.lineTo(canvas.width, CONFIG.GROUND_Y);
-    ctx.stroke();
-
-    // Draw Obstacles
-    ctx.fillStyle = "#FF4444";
-    gameState.level.obstacles.forEach(obj => {
-        let drawX = obj.x - gameState.level.offset;
-        if (drawX > -100 && drawX < canvas.width + 100) {
-            ctx.fillRect(drawX, obj.y, obj.w, obj.h);
-        }
-    });
-
-    // Draw Player (Cube)
-    ctx.save();
-    let p = gameState.player;
-    ctx.translate(p.x + CONFIG.CUBE_SIZE / 2, p.y + CONFIG.CUBE_SIZE / 2);
-    ctx.rotate((p.rotation * Math.PI) / 180);
-    
-    // The "Welcoming Time" Neon Cube
-    ctx
+function loop(t) { update(Math.min((t-(this.lt||t))/1000,0.016)); draw(); this.lt=t; requestAnimationFrame(loop); }
+init(); requestAnimationFrame(loop); window.onresize=init;
