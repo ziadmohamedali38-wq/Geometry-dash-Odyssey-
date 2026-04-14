@@ -38,12 +38,13 @@
             <p>Jumps: <span id="stat-jumps">0</span></p>
             <p>Wins: <span id="stat-wins">0</span></p>
             <button class="btn btn-small" style="width:100%; margin-bottom:5px;" onclick="openDevTerminal()">DEVELOPER TERMINAL</button>
-            <button class="btn btn-small" style="width:100%; color:#666;" onclick="alert('Median Social Login requires active license.')">SOCIAL LOGIN (LOCKED)</button>
+            <button class="btn btn-small" style="width:100%; color:var(--neon);" onclick="window.loginWithGoogle()">GOOGLE LOGIN</button>
         </div>
         <button class="btn btn-small" style="margin-top:15px;" onclick="nav('menu-home')">BACK</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
-    <script src="game.js"></script>
+
+    <script type="module" src="game.js"></script>
 </body>
 </html>
