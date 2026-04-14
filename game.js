@@ -1,6 +1,5 @@
-// --- 1. FIREBASE MODULE SETUP ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
@@ -16,17 +15,16 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Function to trigger login (Call this from your 'Social Login' button)
 window.loginWithGoogle = async () => {
     try {
-        const result = await signInWithPopup(auth, provider);
-        alert("Logged in as: " + result.user.displayName);
-    } catch (error) {
-        console.error(error);
+        await signInWithPopup(auth, provider);
+        alert("Success!");
+    } catch (e) {
+        alert("Error: " + e.message);
     }
 };
 
-// --- 2. YOUR ORIGINAL ENGINE (DO NOT TOUCH) ---
+// --- RESTORED ORIGINAL ENGINE ---
 let gameData = JSON.parse(localStorage.getItem('GDOdysseyData')) || { totalJumps: 0, wins: 0, playerColor: '#0ff', attempts: 1 };
 function save() { localStorage.setItem('GDOdysseyData', JSON.stringify(gameData)); }
 
@@ -85,7 +83,6 @@ function resetGame() {
 }
 
 function handleJump(isDown, e) {
-    // THIS PREVENTS BUTTON INTERFERENCE
     if(e && e.target.closest('.btn, .arrow, button')) return;
     p.isHold = isDown;
     if(state === 'PLAY' && isDown && !paused) {
@@ -97,7 +94,7 @@ function handleJump(isDown, e) {
 
 window.addEventListener('touchstart', (e) => handleJump(true, e));
 window.addEventListener('touchend', (e) => handleJump(false, e));
-window.addEventListener('mousedown', (e) => handleJump(true, e)); // Added for desktop testing
+window.addEventListener('mousedown', (e) => handleJump(true, e));
 window.addEventListener('mouseup', (e) => handleJump(false, e));
 
 function update(dt) {
@@ -114,7 +111,6 @@ function update(dt) {
     if(!noclip) {
         world.forEach(o => {
             let ox = o.x - camX + p.x;
-            let oy = p.flipped ? 75 : floor;
             if(p.x < ox+40 && p.x+35 > ox && Math.abs(p.y - (p.flipped ? 75 : floor-45)) < 40) {
                 if(o.t==='s') { gameData.attempts++; save(); resetGame(); }
                 if(o.t==='p') { p.flipped=!p.flipped; o.x=-9999; }
