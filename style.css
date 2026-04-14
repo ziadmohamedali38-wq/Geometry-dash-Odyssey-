@@ -5,16 +5,16 @@ body {
 }
 .overlay { 
     position: fixed; inset: 0; display: flex; flex-direction: column; 
-    align-items: center; justify-content: center; background: rgba(0,0,0,0.95); z-index: 10000; 
+    align-items: center; justify-content: center; background: rgba(0,0,0,0.9); z-index: 10000; 
 }
 .hidden { display: none !important; }
 .btn { 
     padding: 15px 35px; background: var(--gd-blue); border: 4px solid white; 
     color: white; border-radius: 12px; cursor: pointer; margin: 10px; font-size: 1.1rem;
 }
-.btn-small { padding: 8px 15px; font-size: 0.8rem; background: #444; }
+.btn-small { padding: 8px 15px; font-size: 0.8rem; background: #333; }
 .selector { display: flex; align-items: center; gap: 20px; margin: 20px; }
-.arrow { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; }
+.arrow { background: none; border: none; color: white; font-size: 2.5rem; cursor: pointer; }
 #hud { position: fixed; top: 15px; left: 15px; z-index: 100; color: var(--neon); font-size: 1rem; }
-#pause-trigger { position: fixed; top: 15px; right: 15px; z-index: 11000; padding: 10px; background: none; border: 2px solid white; color: white; border-radius: 5px; }
+#pause-trigger { position: fixed; top: 15px; right: 15px; z-index: 11000; background: none; border: 2px solid white; color: white; padding: 5px 10px; border-radius: 5px; }
 canvas { display: block; width: 100vw; height: 100vh; }
