@@ -17,13 +17,13 @@
             <button class="btn btn-small" onclick="nav('menu-icons')">ICON KIT</button>
             <button class="btn btn-small" onclick="nav('menu-more')">MORE</button>
         </div>
-        <div style="margin-top:20px; font-size:0.7rem; color:#555;">CREDITS: ziadmohamedali-wq</div>
+        <div style="margin-top:20px; font-size:0.7rem; color:#444;">CREDITS: ziadmohamedali-wq</div>
     </div>
 
     <div id="menu-levels" class="overlay hidden">
         <div class="selector">
             <button class="arrow" onclick="changeLvl(-1)">◀</button>
-            <div style="text-align: center; border: 3px solid #444; padding: 20px; border-radius: 15px; width:200px;">
+            <div style="text-align: center; border: 3px solid #444; padding: 20px; border-radius: 15px; width:220px; background:rgba(0,0,0,0.5);">
                 <h2 id="lvl-name">WELCOMING TIME</h2>
                 <button class="btn" onclick="startGame()">START</button>
             </div>
@@ -33,14 +33,14 @@
     </div>
 
     <div id="menu-more" class="overlay hidden">
-        <h2>STATS & SETTINGS</h2>
-        <div style="background:#222; padding:20px; border-radius:10px; width:250px; margin-bottom:15px;">
+        <h2>STATS & DEV</h2>
+        <div style="background:#111; padding:20px; border-radius:10px; width:260px; border: 1px solid #333;">
             <p>Jumps: <span id="stat-jumps">0</span></p>
             <p>Wins: <span id="stat-wins">0</span></p>
-            <button class="btn btn-small" style="width:100%;" onclick="checkDevPassword()">DEVELOPER MODE</button>
-            <button class="btn btn-small" style="width:100%; margin-top:5px;" onclick="loginUser()">SOCIAL LOGIN</button>
+            <button class="btn btn-small" style="width:100%; margin-bottom:5px;" onclick="openDevTerminal()">DEVELOPER TERMINAL</button>
+            <button class="btn btn-small" style="width:100%; color:#666;" onclick="alert('Median Social Login requires active license.')">SOCIAL LOGIN (LOCKED)</button>
         </div>
-        <button class="btn btn-small" onclick="nav('menu-home')">BACK</button>
+        <button class="btn btn-small" style="margin-top:15px;" onclick="nav('menu-home')">BACK</button>
     </div>
 
     <canvas id="gameCanvas"></canvas>
