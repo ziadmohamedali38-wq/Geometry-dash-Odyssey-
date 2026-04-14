@@ -1,5 +1,5 @@
 // ==========================================
-// 1. FIREBASE & CORE SETUP
+// 1. FIREBASE SETUP
 // ==========================================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -18,24 +18,31 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 // ==========================================
-// 2. GAME ENGINE & CUBE MECHANICS
+// 2. CANVAS & PLAYER (CUBE) SETUP
 // ==========================================
 const canvas = document.createElement('canvas');
 const ctx = canvas.getContext('2d');
 document.body.appendChild(canvas);
+document.body.style.margin = "0";
+document.body.style.overflow = "hidden";
+document.body.style.backgroundColor = "#1a1a1a";
 
-let gameRunning = false;
-let userProfile = null;
+let gameActive = false;
+let user = null;
 
-const player = {
-    x: 50,
-    y: 50,
-    size: 40, // The Cube
-    color: "#00FFCC",
-    speed: 5
+const cube = {
+    x: 100,
+    y: 100,
+    size: 50,
+    color: "#00FFCC"
 };
 
-// Scaling Logic
+const buttons = [
+    { id: 1, x: 150, y: 300, w: 80, h: 80, color: "#FF4444", pressed: false },
+    { id: 2, x: 300, y: 150, w: 80, h: 80, color: "#FF4444", pressed: false }
+];
+
+// Handle Mobile Touch and Scaling
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -43,84 +50,94 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// Input Handling for the Cube
+function moveCube(e) {
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    cube.x = clientX - cube.size / 2;
+    cube.y = clientY - cube.size / 2;
+}
+
+canvas.addEventListener('mousemove', moveCube);
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault(); 
+    moveCube(e);
+}, { passive: false });
+
 // ==========================================
-// 3. THE "WELCOMING TIME" LEVEL LOGIC
+// 3. THE FIXED BUTTON LOGIC
 // ==========================================
-const buttons = [
-    { x: 200, y: 200, w: 60, h: 60, color: "red", active: false, label: "FIX ME" }
-];
-
-function update() {
-    if (!gameRunning) return;
-
-    // Movement (Simple Touch/Click follow for mobile)
-    canvas.onmousemove = (e) => {
-        player.x = e.clientX - player.size / 2;
-        player.y = e.clientY - player.size / 2;
-    };
-
-    // Collision with Buttons
+function checkCollisions() {
     buttons.forEach(btn => {
-        if (player.x < btn.x + btn.w && player.x + player.size > btn.x &&
-            player.y < btn.y + btn.h && player.y + player.size > btn.y) {
-            btn.active = true;
-            btn.color = "lime";
+        // Strict Rectangle Collision Formula
+        const isColliding = cube.x < btn.x + btn.w &&
+                            cube.x + cube.size > btn.x &&
+                            cube.y < btn.y + btn.h &&
+                            cube.y + cube.size > btn.y;
+
+        if (isColliding) {
+            btn.pressed = true;
+            btn.color = "#33FF77"; // Turns Green when fixed
+        } else {
+            // Keep it green once fixed, or remove this line to make it toggle
+            // btn.pressed = false; 
         }
     });
 }
 
+// ==========================================
+// 4. MAIN GAME LOOP
+// ==========================================
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (!gameRunning) {
-        // Login Screen UI
+    if (!gameActive) {
+        // Welcome Screen
         ctx.fillStyle = "white";
-        ctx.font = "30px Arial";
         ctx.textAlign = "center";
-        ctx.fillText("WELCOMING TIME", canvas.width / 2, canvas.height / 2 - 50);
-        ctx.font = "20px Arial";
-        ctx.fillText("Click anywhere to Login with Google", canvas.width / 2, canvas.height / 2);
+        ctx.font = "bold 24px sans-serif";
+        ctx.fillText("WELCOMING TIME", canvas.width / 2, canvas.height / 2 - 40);
+        ctx.font = "16px sans-serif";
+        ctx.fillText("Tap to Login & Start", canvas.width / 2, canvas.height / 2);
     } else {
-        // Draw Player (Cube)
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.size, player.size);
-
         // Draw Buttons
         buttons.forEach(btn => {
             ctx.fillStyle = btn.color;
             ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
-            ctx.fillStyle = "black";
-            ctx.fillText(btn.active ? "FIXED" : "PUSH", btn.x + 5, btn.y + 35);
+            ctx.fillStyle = "white";
+            ctx.font = "12px sans-serif";
+            ctx.fillText(btn.pressed ? "FIXED" : "PUSH", btn.x + 40, btn.y + 45);
         });
 
-        // User Greeting
+        // Draw Cube (Player)
+        ctx.fillStyle = cube.color;
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = cube.color;
+        ctx.fillRect(cube.x, cube.y, cube.size, cube.size);
+        ctx.shadowBlur = 0; // Reset shadow
+
+        // HUD
         ctx.fillStyle = "white";
-        ctx.fillText("Player: " + userProfile.displayName, 20, 30);
+        ctx.textAlign = "left";
+        ctx.fillText("User: " + user.displayName, 20, 40);
     }
+
+    checkCollisions();
     requestAnimationFrame(draw);
 }
 
 // ==========================================
-// 4. AUTHENTICATION FLOW
+// 5. AUTH FLOW
 // ==========================================
-window.loginWithGoogle = function() {
-    signInWithRedirect(auth, provider);
-};
-
-// Auto-trigger login on first click if not logged in
 canvas.addEventListener('click', () => {
-    if (!gameRunning) window.loginWithGoogle();
+    if (!gameActive) signInWithRedirect(auth, provider);
 });
 
-// Handle Returning from Redirect
 getRedirectResult(auth).then((result) => {
     if (result || auth.currentUser) {
-        userProfile = result ? result.user : auth.currentUser;
-        gameRunning = true;
-        console.log("Level Loaded: Welcoming Time");
+        user = result ? result.user : auth.currentUser;
+        gameActive = true;
     }
-}).catch((error) => alert("Login Error: " + error.message));
+}).catch((err) => console.error(err));
 
-// Start Graphics
 draw();
-update();
