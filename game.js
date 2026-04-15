@@ -1,4 +1,4 @@
-// 1. ENGINE CORE & CONFIG
+// --- 1. CORE ENGINE & CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
     authDomain: "geometry-dash-odessy.firebaseapp.com",
@@ -14,118 +14,173 @@ const provider = new firebase.auth.GoogleAuthProvider();
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
 
-let state = "LOADING"; 
+// --- 2. GAME STATE & DATA ---
+let state = "BOOTING"; // BOOTING, HOME, ICON_KIT, PLAYING, DEV_OPTIONS
 let user = null;
-const ratio = window.devicePixelRatio || 1;
+let frame = 0;
 
-// Game Objects
-const player = { x: 100, y: 100, size: 60, color: "#00FFCC", velocity: 0 };
-const levelCard = { x: 20, y: 160, h: 120, color: "#161616", active: false };
+const player = {
+    x: 100, y: 300, 
+    w: 50, h: 50, 
+    color: "#00FFCC", 
+    mode: "CUBE", // CUBE or SHIP
+    gravity: 0.6,
+    velocity: 0,
+    jumpForce: -12,
+    isHolding: false
+};
 
-// 2. THE SHARP-RENDERER (Fixes Blur)
-function setupCanvas() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width = w * ratio;
-    canvas.height = h * ratio;
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    ctx.scale(ratio, ratio);
+const iconKit = {
+    colors: ["#00FFCC", "#FF3366", "#FFCC00", "#AA00FF", "#0088FF"],
+    selectedColor: 0
+};
+
+// --- 3. THE SHARP-SCREEN SYSTEM ---
+function resize() {
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    ctx.scale(dpr, dpr);
 }
+window.addEventListener('resize', resize);
+resize();
 
-// 3. UI RENDERING (Rebuilt from Scratch)
-function drawUI() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    if (state === "MENU") {
-        // Big Title
-        ctx.fillStyle = "white";
-        ctx.textAlign = "left";
-        ctx.font = "bold 44px sans-serif";
-        ctx.fillText("Odyssey", 30, 90);
-        
-        ctx.font = "16px sans-serif";
-        ctx.fillStyle = "#666";
-        ctx.fillText(user ? `LOGGED IN AS ${user.displayName.toUpperCase()}` : "TAP CARD TO SYNC & START", 30, 125);
-
-        // Level Selection Card
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "rgba(0,0,0,0.5)";
-        ctx.fillStyle = levelCard.color;
-        
-        // Rounded Rect Helper
-        ctx.beginPath();
-        const cardW = window.innerWidth - 40;
-        ctx.roundRect(20, 160, cardW, 120, 20);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = "white";
-        ctx.font = "bold 22px sans-serif";
-        ctx.fillText("1. Welcoming Time", 50, 215);
-        
-        ctx.fillStyle = "#00FFCC";
-        ctx.font = "14px sans-serif";
-        ctx.fillText("READY TO LAUNCH", 50, 245);
-
-    } else if (state === "PLAYING") {
-        // Square Player
-        ctx.fillStyle = player.color;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = player.color;
-        ctx.fillRect(player.x, player.y, player.size, player.size);
-        ctx.shadowBlur = 0;
-        
-        ctx.fillStyle = "white";
-        ctx.font = "bold 12px sans-serif";
-        ctx.fillText("PLAYING: WELCOMING TIME", 30, 40);
+// --- 4. ENGINE SYSTEMS ---
+function update() {
+    if (state === "PLAYING") {
+        if (player.mode === "CUBE") {
+            player.velocity += player.gravity;
+            player.y += player.velocity;
+            // Floor collision
+            if (player.y > window.innerHeight - 150) {
+                player.y = window.innerHeight - 150;
+                player.velocity = 0;
+            }
+        } else if (player.mode === "SHIP") {
+            // Ship Physics
+            if (player.isHolding) player.velocity -= 0.8;
+            else player.velocity += 0.6;
+            
+            player.y += player.velocity;
+            player.velocity *= 0.98; // Drag
+        }
     }
 }
 
-// 4. INPUT LOGIC
-const handleTouch = (e) => {
+function draw() {
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    frame++;
+
+    if (state === "BOOTING") {
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.fillText("CONNECTING TO ODESSY CLOUD...", window.innerWidth/2, window.innerHeight/2);
+    }
+
+    if (state === "HOME") {
+        // --- TITLE ---
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.font = "bold 60px sans-serif";
+        ctx.fillText("ODESSY", window.innerWidth/2, 150);
+
+        // --- BUTTONS ---
+        drawButton(window.innerWidth/2 - 100, 300, 200, 80, "PLAY", "#00FFCC");
+        drawButton(window.innerWidth/2 - 100, 400, 200, 80, "ICON KIT", "#555");
+        drawButton(window.innerWidth/2 - 100, 500, 200, 80, "DEV OPTS", "#333");
+
+        ctx.font = "14px sans-serif";
+        ctx.fillStyle = "#888";
+        ctx.fillText(user ? `LOGGED IN: ${user.displayName}` : "OFFLINE MODE", window.innerWidth/2, window.innerHeight - 50);
+    }
+
+    if (state === "ICON_KIT") {
+        ctx.fillStyle = "white";
+        ctx.font = "bold 30px sans-serif";
+        ctx.fillText("CHOOSE YOUR VIBE", window.innerWidth/2, 100);
+        
+        // Preview Cube
+        ctx.fillStyle = iconKit.colors[iconKit.selectedColor];
+        ctx.fillRect(window.innerWidth/2 - 40, 200, 80, 80);
+        
+        drawButton(window.innerWidth/2 - 60, 400, 120, 50, "NEXT", "#444");
+        drawButton(window.innerWidth/2 - 60, 500, 120, 50, "BACK", "#222");
+    }
+
+    if (state === "PLAYING") {
+        // Draw Ground
+        ctx.fillStyle = "#111";
+        ctx.fillRect(0, window.innerHeight - 100, window.innerWidth, 100);
+
+        // Draw Player
+        ctx.fillStyle = iconKit.colors[iconKit.selectedColor];
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = ctx.fillStyle;
+        
+        if (player.mode === "SHIP") {
+            // Draw a basic ship shape
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y);
+            ctx.lineTo(player.x + 60, player.y + 25);
+            ctx.lineTo(player.x, player.y + 50);
+            ctx.fill();
+        } else {
+            ctx.fillRect(player.x, player.y, player.w, player.h);
+        }
+        ctx.shadowBlur = 0;
+    }
+
+    requestAnimationFrame(() => {
+        update();
+        draw();
+    });
+}
+
+function drawButton(x, y, w, h, text, color) {
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    ctx.beginPath(); ctx.roundRect(x, y, w, h, 20); ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px sans-serif";
+    ctx.fillText(text, x + w/2, y + h/2 + 7);
+}
+
+// --- 5. INTERACTION LOGIC ---
+const handleInput = (e, isDown) => {
     const t = e.touches ? e.touches[0] : e;
     const x = t.clientX;
     const y = t.clientY;
 
-    if (state === "MENU") {
-        // If clicking inside the card
-        if (y > 160 && y < 280) {
-            if (!user) {
-                auth.signInWithRedirect(provider);
-            } else {
-                state = "PLAYING";
-            }
+    if (isDown) {
+        if (state === "HOME") {
+            if (y > 300 && y < 380) state = "PLAYING";
+            if (y > 400 && y < 480) state = "ICON_KIT";
+            if (y > 500 && y < 580 && !user) auth.signInWithPopup(provider);
+        } else if (state === "ICON_KIT") {
+            if (y > 400 && y < 450) iconKit.selectedColor = (iconKit.selectedColor + 1) % iconKit.colors.length;
+            if (y > 500 && y < 550) state = "HOME";
+        } else if (state === "PLAYING") {
+            player.isHolding = true;
+            if (player.mode === "CUBE" && player.velocity === 0) player.velocity = player.jumpForce;
         }
     } else {
-        player.x = x - player.size / 2;
-        player.y = y - player.size / 2;
+        player.isHolding = false;
     }
 };
 
-// 5. THE ENGINE LOOP
-function loop() {
-    drawUI();
-    requestAnimationFrame(loop);
-}
+canvas.onmousedown = (e) => handleInput(e, true);
+canvas.onmouseup = (e) => handleInput(e, false);
+canvas.ontouchstart = (e) => { e.preventDefault(); handleInput(e, true); };
+canvas.ontouchend = (e) => { e.preventDefault(); handleInput(e, false); };
 
-// 6. INITIALIZATION & AUTH CATCH
-window.addEventListener('resize', setupCanvas);
-setupCanvas();
-
-canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handleTouch(e); }, {passive: false});
-canvas.addEventListener('mousedown', handleTouch);
-
-// This is the "Magic" that stops the loop
-auth.getRedirectResult().then((result) => {
-    if (result.user || auth.currentUser) {
-        user = auth.currentUser || result.user;
-    }
-    state = "MENU";
-    loop();
-}).catch((err) => {
-    console.error(err);
-    state = "MENU";
-    loop();
+// --- 6. THE BOOT SEQUENCE ---
+auth.onAuthStateChanged((u) => {
+    user = u;
+    if (state === "BOOTING") state = "HOME";
 });
+
+// Check if we just came back from a redirect
+auth.getRedirectResult().then(() => {
+    draw(); // Start the engine loop
+}).catch(() => draw());
