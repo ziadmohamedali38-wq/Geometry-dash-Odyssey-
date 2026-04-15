@@ -1,11 +1,12 @@
-/* Samsung One UI System Look */
 :root {
-    --samsung-black: #000000;
-    --samsung-card: #1c1c1c;
-    --samsung-blue: #4285F4;
-    --samsung-accent: #00FFCC;
-    --samsung-text: #ffffff;
-    --samsung-subtext: #888888;
+    --bg: #050505;
+    --accent: #00FFCC;
+    --card: #121212;
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body, html {
@@ -13,40 +14,14 @@ body, html {
     padding: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--samsung-black);
-    color: var(--samsung-text);
+    background: var(--bg);
     overflow: hidden;
-    /* Prevents blue highlights on tap */
-    -webkit-tap-highlight-color: transparent;
-    font-family: 'Samsung One', 'Segoe UI', Roboto, sans-serif;
-}
-
-canvas {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
     touch-action: none;
+    font-family: sans-serif; /* We'll style the text in Canvas */
 }
 
-/* Container for any HTML-based UI elements if needed */
-#ui-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 2;
-}
-
-/* Smooth transitions for state changes */
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+#gameCanvas {
+    width: 100vw;
+    height: 100vh;
+    display: block;
 }
