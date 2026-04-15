@@ -1,148 +1,104 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-    getAuth, 
-    GoogleAuthProvider, 
-    signInWithRedirect, 
-    getRedirectResult 
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// 1. MOBILE-STABLE FIREBASE LOADING
+const scriptApp = document.createElement('script');
+scriptApp.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js";
+document.head.appendChild(scriptApp);
 
-// Your specific Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
-  authDomain: "geometry-dash-odessy.firebaseapp.com",
-  projectId: "geometry-dash-odessy",
-  storageBucket: "geometry-dash-odessy.firebasestorage.app",
-  messagingSenderId: "824100531511",
-  appId: "1:824100531511:web:b25f7b5e688c425cd2feb2",
-  measurementId: "G-M3CE56HJB2"
-};
+scriptApp.onload = () => {
+    const scriptAuth = document.createElement('script');
+    scriptAuth.src = "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js";
+    document.head.appendChild(scriptAuth);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+    scriptAuth.onload = () => {
+        // --- YOUR ACTUAL CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
+            authDomain: "geometry-dash-odessy.firebaseapp.com",
+            projectId: "geometry-dash-odessy",
+            storageBucket: "geometry-dash-odessy.firebasestorage.app",
+            messagingSenderId: "824100531511",
+            appId: "1:824100531511:web:b25f7b5e688c425cd2feb2"
+        };
 
-// Game Canvas Setup
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-document.body.appendChild(canvas);
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const provider = new firebase.auth.GoogleAuthProvider();
 
-// Style the page to be fullscreen
-document.body.style.margin = "0";
-document.body.style.overflow = "hidden";
-document.body.style.backgroundColor = "#000";
+        // --- 2. THE GAME ENGINE ---
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        document.body.appendChild(canvas);
+        
+        // Fullscreen Styling
+        document.body.style.cssText = "margin:0; overflow:hidden; background:#111; touch-action:none;";
+        
+        let state = "MENU"; // MENU, PLAY
+        const player = { x: 100, y: 100, size: 60, color: "#00FFCC" };
+        const buttons = [{ x: 150, y: 300, w: 100, h: 100, color: "red", fixed: false }];
 
-let gameState = "LOADING"; 
-let user = null;
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-// The Cube (Player)
-const player = {
-    x: 50,
-    y: 50,
-    size: 50,
-    color: "#00FFCC"
-};
+        // Mobile Movement Fix
+        const handleMove = (e) => {
+            if (state !== "PLAY") return;
+            const t = e.touches ? e.touches[0] : e;
+            player.x = t.clientX - player.size / 2;
+            player.y = t.clientY - player.size / 2;
+        };
 
-// The Level Buttons (Welcoming Time)
-const buttons = [
-    { x: 150, y: 200, w: 80, h: 80, color: "#FF4444", fixed: false },
-    { x: 300, y: 400, w: 80, h: 80, color: "#FF4444", fixed: false }
-];
+        canvas.addEventListener('mousemove', handleMove);
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); handleMove(e); }, {passive: false});
 
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// Handling Input
-function movePlayer(e) {
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    const y = e.touches ? e.touches[0].clientY : e.clientY;
-    player.x = x - player.size / 2;
-    player.y = y - player.size / 2;
-}
-
-canvas.addEventListener('mousemove', (e) => {
-    if (gameState === "PLAYING") movePlayer(e);
-});
-
-canvas.addEventListener('touchstart', (e) => {
-    if (gameState === "MENU") {
-        signInWithRedirect(auth, provider);
-    } else if (gameState === "PLAYING") {
-        movePlayer(e);
-    }
-}, { passive: false });
-
-canvas.addEventListener('touchmove', (e) => {
-    if (gameState === "PLAYING") {
-        e.preventDefault();
-        movePlayer(e);
-    }
-}, { passive: false });
-
-canvas.addEventListener('mousedown', () => {
-    if (gameState === "MENU") signInWithRedirect(auth, provider);
-});
-
-// The Game Loop
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    if (gameState === "MENU") {
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.font = "bold 30px sans-serif";
-        ctx.fillText("WELCOMING TIME", canvas.width / 2, canvas.height / 2);
-        ctx.font = "18px sans-serif";
-        ctx.fillText("TAP ANYWHERE TO LOGIN", canvas.width / 2, canvas.height / 2 + 50);
-    }
-
-    if (gameState === "PLAYING") {
-        // Draw & Check Buttons
-        buttons.forEach(btn => {
-            // Collision Detection
-            if (player.x < btn.x + btn.w && 
-                player.x + player.size > btn.x && 
-                player.y < btn.y + btn.h && 
-                player.y + player.size > btn.y) {
-                btn.fixed = true;
-                btn.color = "#00FF66";
+        // Click Logic
+        canvas.onclick = () => {
+            if (state === "MENU") {
+                // Try to Login, but also move to PLAY so you aren't stuck
+                auth.signInWithRedirect(provider);
+                // Fallback: If redirect is blocked, let them play anyway after a tap
+                setTimeout(() => { if(state === "MENU") state = "PLAY"; }, 2000);
             }
-            ctx.fillStyle = btn.color;
-            ctx.fillRect(btn.x, btn.y, btn.w, btn.h);
+        };
+
+        // Main Loop
+        function loop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (state === "MENU") {
+                ctx.fillStyle = "white";
+                ctx.textAlign = "center";
+                ctx.font = "bold 24px sans-serif";
+                ctx.fillText("GEOMETRY DASH ODESSY", canvas.width/2, canvas.height/2 - 20);
+                ctx.font = "16px sans-serif";
+                ctx.fillText("TAP TO START / LOGIN", canvas.width/2, canvas.height/2 + 30);
+            } else {
+                // Draw Level
+                buttons.forEach(b => {
+                    // Collision
+                    if (player.x < b.x + b.w && player.x + player.size > b.x && player.y < b.y + b.h && player.y + player.size > b.y) {
+                        b.fixed = true; b.color = "#00FF66";
+                    }
+                    ctx.fillStyle = b.color;
+                    ctx.fillRect(b.x, b.y, b.w, b.h);
+                });
+
+                // Draw Cube
+                ctx.fillStyle = player.color;
+                ctx.fillRect(player.x, player.y, player.size, player.size);
+            }
+            requestAnimationFrame(loop);
+        }
+
+        // Check if we just came back from a login
+        auth.getRedirectResult().then(res => {
+            if (res.user || auth.currentUser) state = "PLAY";
+            loop();
+        }).catch(() => {
+            state = "MENU";
+            loop();
         });
-
-        // Draw Player (Cube)
-        ctx.fillStyle = player.color;
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = player.color;
-        ctx.fillRect(player.x, player.y, player.size, player.size);
-        ctx.shadowBlur = 0;
-
-        // HUD
-        ctx.fillStyle = "white";
-        ctx.textAlign = "left";
-        ctx.font = "14px sans-serif";
-        ctx.fillText("Cube Pilot: " + (user?.displayName || "Player"), 20, 30);
-    }
-
-    requestAnimationFrame(draw);
-}
-
-// Auth State Handling
-getRedirectResult(auth).then((result) => {
-    if (result || auth.currentUser) {
-        user = result ? result.user : auth.currentUser;
-        gameState = "PLAYING";
-    } else {
-        gameState = "MENU";
-    }
-}).catch((err) => {
-    console.error("Auth Error:", err);
-    gameState = "MENU";
-});
-
-draw();
+    };
+};
