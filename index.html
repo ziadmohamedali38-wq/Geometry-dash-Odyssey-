@@ -2,48 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>GD Odyssey</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Geometry Dash Odessy</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Samsung One', sans-serif;
+        }
+        canvas {
+            display: block;
+            touch-action: none;
+        }
+    </style>
 </head>
 <body>
-    <div id="hud" class="hidden">ATTEMPTS: <span id="att-val">1</span> | <span id="progress-val">0%</span></div>
-    <button id="pause-trigger" class="hidden" onclick="togglePause(true)">||</button>
-
-    <div id="menu-home" class="overlay">
-        <h1 style="font-size: 2.5rem; text-shadow: 0 0 10px var(--neon);">GD ODYSSEY</h1>
-        <button class="btn" onclick="nav('menu-levels')">PLAY</button>
-        <div style="display:flex;">
-            <button class="btn btn-small" onclick="nav('menu-icons')">ICON KIT</button>
-            <button class="btn btn-small" onclick="nav('menu-more')">MORE</button>
-        </div>
-        <div style="margin-top:20px; font-size:0.7rem; color:#444;">CREDITS: ziadmohamedali-wq</div>
-    </div>
-
-    <div id="menu-levels" class="overlay hidden">
-        <div class="selector">
-            <button class="arrow" onclick="changeLvl(-1)">◀</button>
-            <div style="text-align: center; border: 3px solid #444; padding: 20px; border-radius: 15px; width:220px; background:rgba(0,0,0,0.5);">
-                <h2 id="lvl-name">WELCOMING TIME</h2>
-                <button class="btn" onclick="startGame()">START</button>
-            </div>
-            <button class="arrow" onclick="changeLvl(1)">▶</button>
-        </div>
-        <button class="btn btn-small" onclick="nav('menu-home')">BACK</button>
-    </div>
-
-    <div id="menu-more" class="overlay hidden">
-        <h2>STATS & DEV</h2>
-        <div style="background:#111; padding:20px; border-radius:10px; width:260px; border: 1px solid #333;">
-            <p>Jumps: <span id="stat-jumps">0</span></p>
-            <p>Wins: <span id="stat-wins">0</span></p>
-            <button class="btn btn-small" style="width:100%; margin-bottom:5px;" onclick="openDevTerminal()">DEVELOPER TERMINAL</button>
-            <button class="btn btn-small" style="width:100%; color:var(--neon);" onclick="window.loginWithGoogle()">GOOGLE LOGIN</button>
-        </div>
-        <button class="btn btn-small" style="margin-top:15px;" onclick="nav('menu-home')">BACK</button>
-    </div>
-
-    <canvas id="gameCanvas"></canvas>
-    <script type="module" src="game.js"></script>
+    <script src="game.js"></script>
 </body>
 </html>
