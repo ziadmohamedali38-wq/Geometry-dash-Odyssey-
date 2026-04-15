@@ -1,21 +1,13 @@
-:root {
-    --amoled: #000000;
-    --accent: #00FFCC;
-    --glass: rgba(255, 255, 255, 0.05);
-}
-
 body, html {
     margin: 0; padding: 0;
     width: 100%; height: 100%;
-    background: var(--amoled);
+    background: #000;
     overflow: hidden;
-    touch-action: none;
-    -webkit-tap-highlight-color: transparent;
+    position: fixed; /* Stops the screen from moving */
 }
-
 #gameCanvas {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     display: block;
-    image-rendering: pixelated; /* Keeps icons sharp */
 }
