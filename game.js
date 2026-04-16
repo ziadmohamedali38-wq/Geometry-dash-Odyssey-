@@ -1,4 +1,4 @@
-// --- FIREBASE & CONFIG ---
+// --- CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
     authDomain: "geometry-dash-odessy.firebaseapp.com",
@@ -14,28 +14,26 @@ const provider = new firebase.auth.GoogleAuthProvider();
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const dpr = window.devicePixelRatio || 1;
 
 // --- ENGINE STATE ---
 let state = "HOME"; 
-let user = null;
 let cameraX = 0;
-const dpr = window.devicePixelRatio || 1;
+let user = null;
 
-// --- PLAYER & ICON KIT ---
 const player = {
-    x: 100, y: 0, w: 54, h: 54,
-    colors: ["#00FFCC", "#FF3366", "#FFCC00", "#AA00FF"],
-    colorIdx: 0,
-    vY: 0, gravity: 0.9, jump: -17,
-    grounded: false, speed: 6
+    x: 100, y: 100, w: 50, h: 50,
+    color: "#00FFCC",
+    vY: 0, gravity: 1.2, jump: -19,
+    grounded: false, speed: 7
 };
 
-// --- LEVEL DATA (The Foundation) ---
-const level = [
-    {x: 600, y: 0, w: 60, h: 60},
-    {x: 900, y: 0, w: 60, h: 120},
-    {x: 1200, y: 60, w: 200, h: 60},
-    {x: 1600, y: 0, w: 60, h: 60}
+// --- LEVEL OBJECTS ---
+const blocks = [
+    {x: 500, y: 0, w: 200, h: 60},
+    {x: 850, y: 0, w: 100, h: 120},
+    {x: 1200, y: 100, w: 300, h: 40},
+    {x: 1700, y: 0, w: 80, h: 80}
 ];
 
 function setup() {
@@ -44,7 +42,7 @@ function setup() {
     ctx.scale(dpr, dpr);
 }
 
-// --- CORE LOOPS ---
+// --- PHYSICS (ANTI-CLIPPING) ---
 function update() {
     if (state !== "PLAYING") return;
 
@@ -52,18 +50,44 @@ function update() {
     player.vY += player.gravity;
     player.y += player.vY;
 
-    const floor = window.innerHeight - 100;
-    if (player.y + player.h > floor) {
-        player.y = floor - player.h;
+    const floorLimit = window.innerHeight - 100;
+    player.grounded = false;
+
+    // Floor Collision
+    if (player.y + player.h > floorLimit) {
+        player.y = floorLimit - player.h;
         player.vY = 0;
         player.grounded = true;
-    } else {
-        player.grounded = false;
     }
 
-    cameraX = player.x - 100;
+    // Solid Block Collision
+    blocks.forEach(b => {
+        const bTop = floorLimit - b.h - b.y;
+        const bBottom = floorLimit - b.y;
+        
+        // Vertical Check (Landing on top)
+        if (player.x + player.w > b.x && player.x < b.x + b.w) {
+            if (player.y + player.h > bTop && player.y + player.h < bBottom && player.vY >= 0) {
+                player.y = bTop - player.h;
+                player.vY = 0;
+                player.grounded = true;
+            }
+            // Horizontal Check (Hitting the side)
+            else if (player.y + player.h > bTop + 5 && player.x + player.w > b.x && player.x < b.x + 10) {
+                reset();
+            }
+        }
+    });
+
+    cameraX = player.x - 150;
 }
 
+function reset() {
+    player.x = 100; player.y = 100; player.vY = 0;
+    state = "HOME";
+}
+
+// --- RENDERER ---
 function draw() {
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -72,92 +96,50 @@ function draw() {
     if (state === "HOME") {
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
-        ctx.font = "bold 60px sans-serif";
-        ctx.fillText("ODESSY", w/2, 150);
-
-        drawBtn(w/2 - 120, 300, 240, 80, "START LEVEL", player.colors[player.colorIdx]);
-        drawBtn(w/2 - 120, 420, 240, 80, "ICON KIT", "#333");
-        drawBtn(w/2 - 120, 540, 240, 80, "DEV OPTS", "#111");
-
-    } else if (state === "ICON_KIT") {
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.font = "bold 30px sans-serif";
-        ctx.fillText("SELECT ICON COLOR", w/2, 100);
+        ctx.font = "bold 50px sans-serif";
+        ctx.fillText("ODYSSEY", w/2, 150);
         
-        ctx.fillStyle = player.colors[player.colorIdx];
-        ctx.fillRect(w/2 - 40, 200, 80, 80);
-
-        drawBtn(w/2 - 100, 400, 200, 60, "CHANGE", "#444");
-        drawBtn(w/2 - 100, 500, 200, 60, "BACK", "#222");
-
+        ctx.strokeStyle = player.color; ctx.lineWidth = 4;
+        ctx.strokeRect(w/2 - 100, 300, 200, 80);
+        ctx.font = "bold 20px sans-serif";
+        ctx.fillText("PLAY", w/2, 348);
     } else if (state === "PLAYING") {
         ctx.save();
         ctx.translate(-cameraX, 0);
-
-        // Ground
-        ctx.fillStyle = "#0a0a0a";
+        
+        // World
+        ctx.fillStyle = "#111";
         ctx.fillRect(cameraX, h - 100, w, 100);
-        ctx.strokeStyle = player.colors[player.colorIdx];
-        ctx.strokeRect(cameraX, h-100, w, 2);
-
-        // Level
-        ctx.fillStyle = "#222";
-        level.forEach(b => ctx.fillRect(b.x, h - 100 - b.h - b.y, b.w, b.h));
+        ctx.fillStyle = "#333";
+        blocks.forEach(b => ctx.fillRect(b.x, h - 100 - b.h - b.y, b.w, b.h));
 
         // Player
-        ctx.fillStyle = player.colors[player.colorIdx];
-        ctx.shadowBlur = 15; ctx.shadowColor = ctx.fillStyle;
+        ctx.fillStyle = player.color;
+        ctx.shadowBlur = 15; ctx.shadowColor = player.color;
         ctx.fillRect(player.x, player.y, player.w, player.h);
-        ctx.shadowBlur = 0;
-
         ctx.restore();
     }
+    requestAnimationFrame(draw);
 }
 
-function drawBtn(x, y, w, h, txt, clr) {
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.beginPath(); ctx.roundRect(x, y, w, h, 15); ctx.fill();
-    ctx.strokeStyle = clr; ctx.lineWidth = 3; ctx.stroke();
-    ctx.fillStyle = "white"; ctx.font = "bold 20px sans-serif";
-    ctx.fillText(txt, x + w/2, y + h/2 + 8);
-}
-
-// --- TOUCH FIX (OFFSET KILLER) ---
-function getTouchPos(e) {
+// --- INPUT ---
+function input(e) {
     const rect = canvas.getBoundingClientRect();
     const t = e.touches ? e.touches[0] : e;
-    return {
-        x: (t.clientX - rect.left),
-        y: (t.clientY - rect.top)
-    };
-}
-
-function input(e) {
-    const p = getTouchPos(e);
-    const w = window.innerWidth;
+    const x = t.clientX - rect.left;
+    const y = t.clientY - rect.top;
 
     if (state === "HOME") {
-        if (p.x > w/2 - 120 && p.x < w/2 + 120) {
-            if (p.y > 300 && p.y < 380) state = "PLAYING";
-            if (p.y > 420 && p.y < 500) state = "ICON_KIT";
-            if (p.y > 540 && p.y < 620 && !user) auth.signInWithRedirect(provider);
-        }
-    } else if (state === "ICON_KIT") {
-        if (p.y > 400 && p.y < 460) player.colorIdx = (player.colorIdx + 1) % player.colors.length;
-        if (p.y > 500 && p.y < 560) state = "HOME";
-    } else if (state === "PLAYING") {
-        if (player.grounded) player.vY = player.jump;
+        if (x > window.innerWidth/2 - 100 && x < window.innerWidth/2 + 100 && y > 300 && y < 380) state = "PLAYING";
+    } else if (state === "PLAYING" && player.grounded) {
+        player.vY = player.jump;
     }
 }
 
-canvas.addEventListener('mousedown', input);
 canvas.addEventListener('touchstart', (e) => { e.preventDefault(); input(e); }, {passive: false});
-
+canvas.addEventListener('mousedown', input);
 window.addEventListener('resize', setup);
-setup();
 
-auth.onAuthStateChanged(u => { user = u; });
-auth.getRedirectResult().then(() => {
-    setInterval(() => { update(); draw(); }, 1000/60);
-});
+setup();
+setInterval(update, 1000/60);
+draw();
