@@ -1,23 +1,74 @@
-body {
-    margin: 0; background: #000;
-    display: flex; justify-content: center; align-items: center;
-    height: 100vh; overflow: hidden; font-family: sans-serif;
+:root {
+    --gd-blue-light: #005291;
+    --gd-blue-dark: #002b4d;
+    --gd-cyan: #00fbff;
 }
-#game-container {
+
+body, html {
+    margin: 0; padding: 0; background: #000;
+    overflow: hidden; height: 100%; width: 100%;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+#master-container {
     position: relative; width: 100vw; height: 56.25vw;
     max-width: 177.7vh; max-height: 100vh;
+    box-shadow: 0 0 100px rgba(0,0,0,0.5);
 }
+
 #gameCanvas {
     width: 100%; height: 100%;
-    background: linear-gradient(#005291, #002b4d); /* Stereo Madness Blue */
+    background: linear-gradient(var(--gd-blue-light), var(--gd-blue-dark));
+    display: block; image-rendering: crisp-edges;
 }
-#progress-wrapper {
-    position: absolute; top: 20px; left: 25%; width: 50%;
-    height: 10px; background: rgba(255,255,255,0.1);
-    border: 2px solid white; border-radius: 5px;
+
+/* UI OVERLAYS */
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; z-index: 1000; background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px); transition: 0.5s;
 }
-#progress-fill { width: 0%; height: 100%; background: #00FFCC; }
-#level-info {
-    position: absolute; bottom: 20px; right: 30px;
-    color: white; font-size: 30px; font-weight: bold;
+
+.hidden { display: none !important; }
+
+.logo {
+    font-size: 100px; color: white; text-shadow: 8px 8px #000;
+    letter-spacing: -5px; margin-bottom: 50px;
+}
+.accent { color: var(--gd-cyan); }
+
+#auth-section input {
+    padding: 20px; width: 400px; border-radius: 10px; border: 4px solid white;
+    background: rgba(0,0,0,0.5); color: white; font-size: 24px; text-align: center;
+}
+
+.menu-buttons {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 40px;
+}
+
+.btn-main {
+    padding: 20px 40px; font-size: 20px; font-weight: bold;
+    background: var(--gd-cyan); border: 4px solid white; border-radius: 15px;
+    cursor: pointer; transition: 0.2s;
+}
+
+/* GAME HUD */
+#game-hud {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 500;
+}
+
+#progress-container {
+    position: absolute; top: 40px; left: 25%; width: 50%;
+    height: 16px; border: 4px solid white; border-radius: 20px;
+    background: rgba(0,0,0,0.4); overflow: hidden;
+}
+
+#progress-fill { width: 0%; height: 100%; background: var(--gd-cyan); box-shadow: 0 0 20px var(--gd-cyan); }
+
+#level-meta {
+    position: absolute; bottom: 40px; width: 95%; display: flex;
+    justify-content: space-between; padding: 0 40px;
+    color: white; font-size: 32px; font-weight: bold; text-shadow: 3px 3px #000;
 }
