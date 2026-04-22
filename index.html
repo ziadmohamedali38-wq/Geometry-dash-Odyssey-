@@ -2,25 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Geometry Odyssey</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Geometry Odyssey: Absolute</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-</head>
-<body>
-    <div id="game-container">
-        <div id="progress-wrapper">
-            <div id="progress-fill"></div>
-        </div>
-
-        <canvas id="gameCanvas" width="1920" height="1080"></canvas>
-
-        <div id="level-info">STEREO MADNESS</div>
-    </div>
 
     <script>
-        // Use your provided config exactly
         const firebaseConfig = {
             apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
             authDomain: "geometry-dash-odessy.firebaseapp.com",
@@ -31,7 +21,63 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Level Editor Cloud Logic
+        window.Cloud = {
+            save: async (levelName, levelData) => {
+                const user = auth.currentUser;
+                if (!user) { alert("Login first!"); return; }
+                await db.collection("levels").doc(levelName).set({
+                    creator: user.displayName || "Anonymous",
+                    data: levelData,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert("Level Uploaded to Odyssey Servers!");
+            }
+        };
     </script>
+</head>
+<body>
+
+    <div id="master-container">
+        <div id="main-menu" class="overlay">
+            <div class="menu-bg-effect"></div>
+            <h1 class="logo">GEOMETRY <span class="accent">ODYSSEY</span></h1>
+            
+            <div id="auth-section">
+                <input type="text" id="user-input" placeholder="Enter Nickname...">
+                <div class="menu-buttons">
+                    <button class="btn-main" onclick="Engine.initGame(1)">PLAY STEREO MADNESS</button>
+                    <button class="btn-main" onclick="Engine.initGame(2)">PLAY BACK ON TRACK</button>
+                    <button class="btn-main" onclick="Engine.initGame(3)">PLAY POLARGEIST</button>
+                    <button class="btn-sub" onclick="Engine.openEditor()">LEVEL EDITOR</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="editor-ui" class="hidden">
+            <div class="toolbar">
+                <button onclick="Editor.setBrush('block')">BLOCK</button>
+                <button onclick="Editor.setBrush('spike')">SPIKE</button>
+                <button onclick="Editor.save()">SAVE TO CLOUD</button>
+                <button onclick="location.reload()">EXIT</button>
+            </div>
+        </div>
+
+        <div id="game-hud" class="hidden">
+            <div id="progress-container">
+                <div id="progress-fill"></div>
+            </div>
+            <div id="level-meta">
+                <span id="level-title">STEREO MADNESS</span>
+                <span id="attempt-count">ATTEMPT 1</span>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="1920" height="1080"></canvas>
+    </div>
+
     <script src="game.js"></script>
 </body>
 </html>
