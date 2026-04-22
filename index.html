@@ -9,6 +9,38 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
+            authDomain: "geometry-dash-odessy.firebaseapp.com",
+            projectId: "geometry-dash-odessy",
+            storageBucket: "geometry-dash-odessy.firebasestorage.app",
+            messagingSenderId: "824100531511",
+            appId: "1:824100531511:web:b25f7b5e688c425cd2feb2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        
+        // Attach to window so game.js can always see them
+        window.auth = firebase.auth();
+        window.db = firebase.firestore();
+
+        // Sign in anonymously so the editor can save immediately
+        window.auth.signInAnonymously().catch(err => console.error("Auth Error:", err));
+
+        // Editor Cloud Saver
+        window.LevelManager = {
+            saveLevel: async (name, data) => {
+                try {
+                    await window.db.collection("levels").doc(name).set({ blocks: data });
+                    alert("Level saved to cloud!");
+                } catch (e) {
+                    console.error("Save failed:", e);
+                }
+            }
+        };
+    </script>
 </head>
 <body>
 
@@ -20,8 +52,6 @@
 
     <canvas id="gameCanvas" width="1920" height="1080"></canvas>
 
-    <script src="firebase-config.js"></script>
-    <script src="editor.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
