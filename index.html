@@ -1,65 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Geometry Odyssey</title>
-    <link rel="stylesheet" href="style.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-</head>
-<body>
+<div id="main-ui">
+    <h1>Odyssey Studios</h1>
+    <div id="level-list"></div> </div>
 
-    <div id="odyssey-wrapper">
-        <div id="splash-screen" class="ui-layer">
-            <div class="median-logo">
-                <img src="median_icon.png" alt="Median">
-                <h1>Median</h1>
-            </div>
-        </div>
+<div id="dev-panel" class="system-hidden">
+    <h3>Developer Console</h3>
+    <button onclick="openEditor()">Launch Editor</button>
+    <button onclick="manageServer()">Mod Tools</button>
+</div>
 
-        <div id="main-menu" class="ui-layer hidden">
-            <div class="bg-gradient"></div>
-            <h1 class="main-title">GEOMETRY <span class="cyan">ODYSSEY</span></h1>
-            
-            <div class="auth-container">
-                <input type="text" id="nickname-input" placeholder="Enter Nickname...">
-                <div class="menu-grid">
-                    <button class="btn-play" onclick="Game.start(1)">PLAY STEREO MADNESS</button>
-                    <button class="btn-play" onclick="Game.start(2)">PLAY BACK ON TRACK</button>
-                    <button class="btn-icon" onclick="UI.toggleIconKit()">ICON KIT</button>
-                    <button class="btn-editor" onclick="UI.openEditor()">EDITOR</button>
-                </div>
-            </div>
-        </div>
+<button id="auth-btn" onclick="systemAuth()">Access System</button>
 
-        <div id="game-hud" class="ui-layer hidden">
-            <div class="progress-bar-container">
-                <div id="progress-fill"></div>
-            </div>
-            <div class="level-info">
-                <h2 id="current-level-name">STEREO MADNESS</h2>
-                <p id="attempt-label">ATTEMPT 1</p>
-            </div>
-        </div>
-
-        <canvas id="gameCanvas" width="1920" height="1080"></canvas>
-    </div>
-
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDEw8iPR12evpKzHBQmYnlcTdoYD3pK-xc",
-            authDomain: "geometry-dash-odessy.firebaseapp.com",
-            projectId: "geometry-dash-odessy",
-            storageBucket: "geometry-dash-odessy.firebasestorage.app",
-            messagingSenderId: "824100531511",
-            appId: "1:824100531511:web:b25f7b5e688c425cd2feb2"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-    </script>
-    <script src="game.js"></script>
-</body>
-</html>
+<script src="game.js"></script>
+<link rel="stylesheet" href="style.css">
