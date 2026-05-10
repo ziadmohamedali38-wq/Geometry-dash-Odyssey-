@@ -1,14 +1,22 @@
-<div id="main-ui">
-    <h1>Odyssey Studios</h1>
-    <div id="level-list"></div> </div>
+<div id="game-container">
+    <canvas id="gameCanvas" width="800" height="400" onclick="handleCanvasClick(event)"></canvas>
 
-<div id="dev-panel" class="system-hidden">
-    <h3>Developer Console</h3>
-    <button onclick="openEditor()">Launch Editor</button>
-    <button onclick="manageServer()">Mod Tools</button>
+    <button id="auth-btn" onclick="unlockSystem()">Developer Login</button>
+
+    <div id="editor-ui" style="display:none; flex-direction: column;">
+        <div class="toolbar">
+            <button onclick="selectedObject = 'block'">Block</button>
+            <button onclick="selectedObject = 'spike'">Spike</button>
+            <button onclick="saveToRTXD()">Upload to GDPS</button>
+        </div>
+        <p>Editor Active: Click canvas to place objects.</p>
+    </div>
 </div>
 
-<button id="auth-btn" onclick="systemAuth()">Access System</button>
-
-<script src="game.js"></script>
-<link rel="stylesheet" href="style.css">
+<script>
+    // Bridge between HTML clicks and JS logic
+    function handleCanvasClick(e) {
+        const rect = e.target.getBoundingClientRect();
+        placeObject(e.clientX - rect.left, e.clientY - rect.top);
+    }
+</script>
