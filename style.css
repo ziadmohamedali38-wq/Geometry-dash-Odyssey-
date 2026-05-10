@@ -1,12 +1,25 @@
-/* Standard Odyssey Look */
-body { background: #111; color: #fff; font-family: sans-serif; }
-
-.system-hidden {
-    display: none; /* Keeps the system from crashing if UI isn't ready */
+#gameCanvas {
+    background: #222;
+    border: 2px solid #444;
+    cursor: crosshair;
+    display: block;
+    margin: 20px auto;
 }
 
-.dev-active {
-    display: block !important;
-    border: 2px solid #00ff00;
+.toolbar {
+    background: #333;
     padding: 10px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
 }
+
+button {
+    padding: 10px 20px;
+    background: #0088ff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover { background: #0055aa; }
