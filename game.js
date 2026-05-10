@@ -1,51 +1,42 @@
-// --- ODYSSEY ENGINE CORE ---
-const CONFIG = {
-    BASE: "https://rtxd.ps.fhgdps.com/",
-    SEC: "Wmdf2p9383k3"
-};
+// Odyssey Engine State
+let editorMode = false;
+let selectedObject = 'block'; 
+let levelData = []; // This stores your objects
 
-// 1. Authorization Logic
-function systemAuth() {
-    const access = prompt("System Code:");
-    if (access === "7952") {
-        document.getElementById('dev-panel').className = 'dev-active';
-        console.log("System: Dev Access Granted.");
+// THE 7952 UNLOCK (Functional)
+function unlockSystem() {
+    const code = prompt("System Access:");
+    if (code === "7952") {
+        editorMode = true;
+        document.getElementById('editor-ui').style.display = 'flex';
+        document.getElementById('auth-btn').style.display = 'none';
+        initCanvas(); // Starts the drawing engine
     }
 }
 
-// 2. Lively Level Fetcher (No-Crash Version)
-async function loadLivelyFeed() {
-    try {
-        const res = await fetch(`${CONFIG.BASE}getGJLevels21.php`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `type=4&secret=${CONFIG.SEC}`
-        });
-        const text = await res.text();
-        if (text === "-1") return;
+// THE PLACEMENT LOGIC
+function placeObject(x, y) {
+    if (!editorMode) return;
 
-        const levels = text.split('|').map(l => {
-            const d = l.split(':');
-            return `<div class='lvl-card'>${d[3]} by ${d[5]}</div>`;
-        });
-        
-        document.getElementById('level-list').innerHTML = levels.join('');
-    } catch (err) {
-        console.log("System: Server link offline. Retrying...");
-    }
+    // Grid Snapping (Typical GD logic)
+    const snapX = Math.floor(x / 30) * 30;
+    const snapY = Math.floor(y / 30) * 30;
+
+    const newObj = { x: snapX, y: snapY, type: selectedObject };
+    levelData.push(newObj);
+    
+    drawLevel(); // Refreshes the screen
 }
 
-// 3. Mod Delete Request (The "Delete" Chunk)
-async function modDeleteLevel(targetID) {
-    if (confirm("Delete level " + targetID + " permanently?")) {
-        const res = await fetch(`${CONFIG.BASE}deleteGJLevel21.php`, {
-            method: 'POST',
-            body: `levelID=${targetID}&secret=${CONFIG.SEC}`
-        });
-        const status = await res.text();
-        if (status === "1") alert("Level Purged.");
-    }
-}
+// DRAWING THE GAME
+function drawLevel() {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-// Auto-run on load
-window.onload = loadLivelyFeed;
+    levelData.forEach(obj => {
+        if(obj.type === 'block') ctx.fillStyle = '#00aaff';
+        if(obj.type === 'spike') ctx.fillStyle = '#ff4444';
+        ctx.fillRect(obj.x, obj.y, 30, 30);
+    });
+}
